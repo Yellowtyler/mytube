@@ -2,16 +2,16 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export { ApiError } from '../../generated/core/ApiError';
-export { CancelablePromise, CancelError } from '../../generated/core/CancelablePromise';
-export { OpenAPI } from '../../generated/core/OpenAPI';
-export type { OpenAPIConfig } from '../../generated/core/OpenAPI';
+export { ApiError } from './core/ApiError';
+export { CancelablePromise, CancelError } from './core/CancelablePromise';
+export { OpenAPI } from './core/OpenAPI';
+export type { OpenAPIConfig } from './core/OpenAPI';
 
-export type { ChangePasswordRequest } from '../../generated/models/ChangePasswordRequest';
-export type { ForgotPasswordRequest } from '../../generated/models/ForgotPasswordRequest';
-export type { LoginRequest } from '../../generated/models/LoginRequest';
-export type { LoginResponse } from '../../generated/models/LoginResponse';
-export type { RegisterRequest } from '../../generated/models/RegisterRequest';
-export type { ResetPasswordRequest } from '../../generated/models/ResetPasswordRequest';
+export type { ChangePasswordRequest } from './models/ChangePasswordRequest';
+export type { ForgotPasswordRequest } from './models/ForgotPasswordRequest';
+export type { LoginRequest } from './models/LoginRequest';
+export type { LoginResponse } from './models/LoginResponse';
+export type { RegisterRequest } from './models/RegisterRequest';
+export type { ResetPasswordRequest } from './models/ResetPasswordRequest';
 
-export { AuthApiImplService } from '../../generated/services/AuthApiImplService';
+export { AuthApiImplService } from './services/AuthApiImplService';
