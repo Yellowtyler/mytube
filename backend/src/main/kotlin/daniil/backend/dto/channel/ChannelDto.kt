@@ -13,6 +13,4 @@ data class ChannelDto(
     val owner: UserDto,
     val subscribersCount: Int,
     val videos: Set<VideoDto>
-) {
-
-}
+)

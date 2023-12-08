@@ -9,7 +9,7 @@ import java.util.UUID
 class Like(
     @Id
     @GeneratedValue
-    val id: UUID,
+    var id: UUID?,
 
     @Column
     val isLike: Boolean,

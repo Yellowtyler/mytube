@@ -7,6 +7,5 @@ import org.springframework.boot.runApplication
 class BackendApplication
 
 fun main(args: Array<String>) {
-	println("Check")
 	runApplication<BackendApplication>(*args)
 }

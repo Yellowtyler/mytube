@@ -1,5 +1,3 @@
 package daniil.backend.dto.video
 
-class AddCommentResponse {
-
-}
+class AddCommentResponse

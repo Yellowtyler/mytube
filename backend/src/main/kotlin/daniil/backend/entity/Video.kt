@@ -13,7 +13,7 @@ import java.util.UUID
 class Video(
     @Id
     @Column
-    val id: UUID,
+    var id: UUID?,
 
     @Column
     var name: String,

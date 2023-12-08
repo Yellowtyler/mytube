@@ -17,4 +17,38 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     defer-datasource-initialization: true
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
+
+client:
+  url: http://localhost:8080
+
+jwt:
+  uri: /auth/**
+  header: Authorization
+  prefix: Bearer
+  expiration: 3000
+  secret: JwtSuperBigFuckGigaBigBigBigBigBigSecretYeah
+  ignorePath:
+    - /auth/login
+    - /auth/register
+    - /auth/reset-password
+    - /auth/forgot-password
+    - /auth/confirm-registration
+    - /swagger-ui
+    - /v3/api-docs
+    - /favicon.ico
+    - /swagger-resources
+    - /actuator
+    - /api/ws
+
+mail:
+  isActive: true
+  host: smtp.gmail.com
+  port: 587
+  username: ${MAIL}
+  password: ${PASSWORD}
+  from: ${MAIL}
+  protocol: smtp
+  auth: true
+  tls: true
+  debug: true

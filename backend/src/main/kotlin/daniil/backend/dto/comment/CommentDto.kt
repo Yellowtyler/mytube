@@ -9,5 +9,4 @@ data class CommentDto(
     val content: String,
 
     val createdAt: OffsetDateTime
-){
-}
+)

@@ -15,7 +15,7 @@ import java.util.UUID
 class Comment(
     @Id
     @GeneratedValue
-    val id: UUID,
+    var id: UUID?,
 
     @Column
     val content: String,

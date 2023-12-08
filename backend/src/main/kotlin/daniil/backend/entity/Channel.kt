@@ -9,7 +9,7 @@ import java.util.*
 class Channel(
     @Id
     @Column
-    val id: UUID,
+    var id: UUID?,
 
     @Column
     var name: String,

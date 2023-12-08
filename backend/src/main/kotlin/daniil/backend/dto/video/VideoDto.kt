@@ -24,6 +24,4 @@ data class VideoDto(
 
     val dislikesCount: Int
 
-){
-
-}
+)

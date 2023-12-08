@@ -9,8 +9,6 @@ data class UserDto (
     val name: String,
     val mail: String,
     val createdAt: OffsetDateTime,
-    val userRole: UserRole,
+    val role: UserRole,
     val isBlocked: Boolean
-){
-
-}
+)

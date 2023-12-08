@@ -6,6 +6,9 @@ plugins {
 	kotlin("jvm") version "1.8.22"
 	kotlin("plugin.spring") version "1.8.22"
 	kotlin("plugin.jpa") version "1.8.22"
+	kotlin("kapt") version "1.8.22"
+	kotlin("plugin.noarg") version "1.8.22"
+	id("org.jetbrains.kotlin.plugin.allopen") version "1.8.22"
 }
 
 group = "daniil"
@@ -25,10 +28,23 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-security")
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("org.springframework.boot:spring-boot-starter-webflux")
+	implementation ("org.springframework.boot:spring-boot-starter-mail")
+	implementation("org.springframework.boot:spring-boot-starter-aop")
+	implementation("org.springframework.retry:spring-retry:2.0.0")
+	implementation("org.springdoc:springdoc-openapi-ui:1.7.0")
+
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 	implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
+	implementation ("io.github.oshai:kotlin-logging-jvm:5.1.0")
+	implementation ("io.jsonwebtoken:jjwt-api:0.11.5")
+	runtimeOnly ("io.jsonwebtoken:jjwt-impl:0.11.5")
+	runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.5")
+	implementation("org.mapstruct:mapstruct:1.6.0.Beta1")
+	kapt("org.mapstruct:mapstruct-processor:1.6.0.Beta1")
+
+
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("io.projectreactor:reactor-test")
 	testImplementation("org.springframework.security:spring-security-test")
@@ -43,4 +59,12 @@ tasks.withType<KotlinCompile> {
 
 tasks.withType<Test> {
 	useJUnitPlatform()
+}
+
+allOpen {
+	annotation("jakarta.persistence.Entity")
+}
+
+noArg {
+	annotation("daniil.backend.annotation.NoArgsConstructor")
 }

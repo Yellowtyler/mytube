@@ -13,6 +13,7 @@ interface VideoApi {
     fun blockVideo(id: UUID, authentication: Authentication)
     fun deleteVideo(id: UUID, authentication: Authentication)
     fun likeVideo(req: LikeVideoRequest, authentication: Authentication)
+    fun incrementView(authentication: Authentication)
     fun addComment(req: AddCommentRequest, authentication: Authentication): ResponseEntity<AddCommentResponse>
     fun deleteComment(commentId: UUID, authentication: Authentication)
 }
