@@ -1,9 +1,6 @@
 package daniil.backend.service.impl
 
-import daniil.backend.dto.user.GetUsersRequest
-import daniil.backend.dto.user.GetUsersResponse
-import daniil.backend.dto.user.UpdateRoleRequest
-import daniil.backend.dto.user.UserDto
+import daniil.backend.dto.user.*
 import daniil.backend.entity.User
 import daniil.backend.enums.UserRole
 import daniil.backend.exception.UserHasNoPermissionException
@@ -35,9 +32,9 @@ class UserServiceImpl(
         return userMapper.toDto(user)
     }
 
-    override fun getUserByToken(auth: Authentication): UserDto {
+    override fun getUserByToken(auth: Authentication): UserShortDto {
         val user = userRepository.findByName(auth.name) ?: throwUserNotFound(auth.name)
-        return userMapper.toDto(user)
+        return userMapper.toShortDto(user)
     }
 
     override fun getUsers(req: GetUsersRequest, auth: Authentication): GetUsersResponse {
