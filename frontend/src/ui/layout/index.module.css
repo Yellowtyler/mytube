@@ -1,0 +1,23 @@
+
+.layout {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    min-block-size: 100vb;
+}
+
+.header {
+    display: flex;
+    align-self: center;
+    justify-content: space-between;
+    padding: 16 px;
+    background-color: rgb(197, 50, 50);
+}
+
+.main {
+    inline-size: min(100%, 1020px);
+    margin: 0 auto 75px;
+}
+
+.icon {
+    max-width: 10%;
+}

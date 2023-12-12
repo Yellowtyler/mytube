@@ -1,26 +1,41 @@
-import React from 'react';
-import logo from './logo.svg';
 import './App.css';
+import { Route, Routes } from 'react-router-dom';
+import { Layout } from './ui/layout';
+import { NoMatch } from './pages/nomatch';
+import { Home } from './pages/home';
+import { ThemeProvider } from '@emotion/react';
+import { createTheme } from '@mui/material';
 
 function App() {
+  
+  const theme = createTheme(
+    {
+      palette: {
+        primary: {
+          main: '#e53935',
+        },
+        secondary: {
+          main: '#e64a19',
+        },
+      },
+    }
+  )
+  
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+  <ThemeProvider theme={theme}>
+    <Routes>
+    
+      <Route path='/' element={<Layout />}>
+        <Route index element={<Home />} />
+        {/* Using path="*"" means "match anything", so this route
+              acts like a catch-all for URLs that we don't have explicit
+              routes for. */}
+        <Route path="*" element={<NoMatch />} />
+      </Route>
+    </Routes>
+  </ThemeProvider>
+    )
+
 }
 
 export default App;
