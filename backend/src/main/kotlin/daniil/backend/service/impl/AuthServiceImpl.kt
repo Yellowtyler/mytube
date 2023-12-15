@@ -4,10 +4,7 @@ import daniil.backend.dto.auth.*
 import daniil.backend.entity.Token
 import daniil.backend.entity.User
 import daniil.backend.enums.TokenType
-import daniil.backend.exception.BadPasswordException
-import daniil.backend.exception.ExpiredTokenException
-import daniil.backend.exception.UserAlreadyExistsException
-import daniil.backend.exception.WrongPasswordException
+import daniil.backend.exception.*
 import daniil.backend.extension.throwTokenNotFound
 import daniil.backend.extension.throwUserNotFound
 import daniil.backend.property.ClientProperty
@@ -61,7 +58,7 @@ class AuthServiceImpl(
         mailService.sendMessage(
             req.mail,
             "Confirm registration",
-            "please confirm via link ${clientProperty.url}/api/auth/confirm-registration/${savedToken.token}"
+            "please confirm via link ${clientProperty.url}/confirm-registration/${savedToken.token}"
         )
     }
 
@@ -134,6 +131,12 @@ class AuthServiceImpl(
 
     override fun forgotPassword(req: ForgotPasswordRequest) {
         val user: User = userRepository.findByMail(req.mail) ?: throwUserNotFound(req.mail)
+        val oldToken = tokenRepository.findByUser_Id(user.id!!)
+        if (oldToken != null) {
+            if (oldToken.expirationDateTime.isAfter(OffsetDateTime.now()))
+                throw TokenAlreadyExistsException("token already exists! check your mail")
+            tokenRepository.delete(oldToken)
+        }
         val token = Token(
             null,
             UUID.randomUUID().toString(),
@@ -145,7 +148,7 @@ class AuthServiceImpl(
         mailService.sendMessage(
             req.mail,
             "Reset password",
-            "please follow the link ${clientProperty.url}/api/auth/reset-password/${savedToken.token}"
+            "please follow the link ${clientProperty.url}/reset-password/${savedToken.token}"
         )
     }
 

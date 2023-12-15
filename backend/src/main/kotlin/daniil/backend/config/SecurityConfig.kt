@@ -44,7 +44,7 @@ class SecurityConfig (
                 authorize("/api/auth/reset-password", permitAll)
                 authorize("/api/auth/change-password", authenticated)
                 authorize("/api/auth/forgot-password", permitAll)
-                authorize("/api/auth/logout", authenticated)
+                authorize(HttpMethod.POST, "/api/auth/logout", authenticated)
                 authorize("/api/video/**", authenticated)
                 authorize("/api/user/**", authenticated)
                 authorize("/api/channel/**", authenticated)
@@ -68,7 +68,7 @@ class SecurityConfig (
     fun corsConfigurer(): WebMvcConfigurer {
        return object: WebMvcConfigurer {
             override fun addCorsMappings(registry: CorsRegistry) {
-                registry.addMapping("/**").allowedOrigins("http://localhost:3000", clientProperty.url)
+                registry.addMapping("/**").allowedOrigins(clientProperty.url)
             }
         }
     }

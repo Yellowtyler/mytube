@@ -34,3 +34,7 @@ class UserHasNoPermissionException(override val message: String): AbstractExcept
 class BadPasswordException(override val message: String): AbstractException(
     errorCode = ErrorCode.BAD_PASSWORD, message = message
 )
+
+class TokenAlreadyExistsException(override val message: String): AbstractException(
+   errorCode = ErrorCode.TOKEN_ALREADY_EXISTS, message = message
+)

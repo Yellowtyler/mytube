@@ -44,48 +44,61 @@ export let addToken = action(data, 'add', (store, tokenValue: string) => {
     store.set(tokenValue)
 })
   
-  export let removeToken = action(data, 'remove', store => {
-    store.set(null)
-  })
+export let removeToken = action(data, 'remove', store => {
+  store.set(null)
+})
   
-  export let auth = action(
-    data,
-    'auth',
-    async (store, req: LoginRequest): Promise<void> => {
-      loading.set(true)
-  
-      try {
-        let { token: tokenValue } = await AuthApiImplService.login(req)
-  
-        if (tokenValue) {
-          addToken(tokenValue)
-        } else {
-          throw new Error('UNKNOWN_ERROR')
-        }
-      } catch (error_) {
-        let errorResponseValue = error_ as {
-          body?: {
-            message: string
-            code: ErrorCode
-          }
-        }
-  
-        error.set({
-            message: errorResponseValue.body?.message,
-            code: errorResponseValue.body?.code ?? ErrorCode.UNKNOWN_ERROR        
-        })
-      } finally {
-        loading.set(false)
+export let auth = action(
+  data,
+  'auth',
+  async (store, req: LoginRequest): Promise<void> => {
+    loading.set(true)
+
+    try {
+      let { token: tokenValue } = await AuthApiImplService.login(req)
+
+      if (tokenValue) {
+        addToken(tokenValue)
+      } else {
+        throw new Error('UNKNOWN_ERROR')
       }
-    },
-  )
-  
-  export let logout = action(data, 'logout', async (store): Promise<void> => {
-    let authorization = store.get()
-    removeToken()
-  
-    if (authorization) {
-      await AuthApiImplService.logout(authorization)
+    } catch (error_) {
+      createError(error_)
+      return
+    } finally {
+      loading.set(false)
     }
-  
-  })
+
+    error.set(null)
+    closeAuthTab()
+  }
+)
+
+export let logout = action(data, 'logout', async (store): Promise<void> => {
+  let authorization = 'Bearer ' + store.get()
+  console.log(authorization)
+  removeToken()
+
+  if (authorization) {
+    await AuthApiImplService.logout(authorization)
+  }
+
+})
+
+export const createError = (error_: any) => {
+    let errorResponseValue = error_ as {
+        body?: {
+          message: string
+          code: ErrorCode
+        }
+      }
+
+      if (!errorResponseValue.body) {
+        errorResponseValue.body = {message: "Service in unavailable", code: ErrorCode.SERVICE_ERROR}
+      } 
+      
+      error.set({
+          message: errorResponseValue.body?.message,
+          code: errorResponseValue.body?.code ?? ErrorCode.UNKNOWN_ERROR        
+      })
+}

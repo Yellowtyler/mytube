@@ -1,9 +1,10 @@
 import { FC, useState } from "react";
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Tab, Tabs, TextField } from "@mui/material";
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormLabel, Tab, Tabs, TextField } from "@mui/material";
 import { useStore } from "@nanostores/react";
-import { auth, closeAuthTab, openAuth } from "../../stores/security";
+import { auth, closeAuthTab, createError, error, openAuth } from "../../stores/security";
 import ErrorAlert from "../../ui/error-alert";
 import { AuthApiImplService, RegisterRequest } from "../../api";
+import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 
 export type AuthProps = {
     value: number;
@@ -13,9 +14,10 @@ export type AuthProps = {
 export const Auth: FC = () => {
     
     let open = useStore(openAuth)
+    const errorVal = useStore(error)
 
     const [value, setValue] = useState<number>(0);
-
+    
     const handleChange = (event: React.SyntheticEvent, newValue: number) => {
       setValue(newValue);
     };
@@ -25,7 +27,7 @@ export const Auth: FC = () => {
           id: `simple-tab-${index}`,
           'aria-controls': `simple-tabpanel-${index}`,
         };
-      }
+    }
 
     return (
         <Dialog open={open} onClose={closeAuthTab}>
@@ -37,30 +39,26 @@ export const Auth: FC = () => {
             </Box>
             <Login index={0} value={value} />
             <Register index={1} value={value} />
+           {errorVal && <ErrorAlert/>}
         </Dialog>
     ) 
 }
 
-export const Login: FC<AuthProps> = (props: AuthProps) => {
+const Login: FC<AuthProps> = (props: AuthProps) => {
     const [name, setName] = useState<string>('')
     const [password, setPassword] = useState<string>('')
-    const [isError, setIsError] = useState<boolean>(false)
+    const [forgot, setForgot] = useState<boolean>(false)
+
 
     const login = () => {
         let req = {name: name, password: password}
-        try {
-            auth(req)
-        } catch (e) {
-            setIsError(true)
-            return
-        }
-        closeAuthTab()
-        setIsError(false)
+        auth(req)
     }
 
     return (
         <div hidden={props.value !== props.index} id={`simple-tabpanel-${props.index}`} aria-labelledby={`simple-tab-${props.index}`}>
-            <DialogTitle>Login</DialogTitle>
+            {
+            !forgot ? <div>
             <DialogContent>
                 <TextField
                     value={name}
@@ -84,29 +82,97 @@ export const Login: FC<AuthProps> = (props: AuthProps) => {
                     fullWidth
                     variant="standard"
                 />
+                <Box sx={{ m: 3}}/>
+                <FormLabel style={{cursor: 'pointer'}} onClick={(e: any) => setForgot(true)}>Forget password?</FormLabel>
             </DialogContent>
             <DialogActions>
                 <Button onClick={closeAuthTab}>Cancel</Button>
                 <Button onClick={login}>Login</Button>
             </DialogActions>
-            {isError && <ErrorAlert/>}
-        </div>
+            </div>
+            : <ForgotPassword setForgot={setForgot}/>
+            }
+       </div>
     )
 }
 
-export const Register: FC<AuthProps> = (props: AuthProps) => {
+type ForgotPasswordProps = {
+    setForgot: (val: boolean) => void
+}
+
+const ForgotPassword: FC<ForgotPasswordProps> = (props: ForgotPasswordProps) => {
+
+    const [mail, setMail] = useState<string>('') 
+    const [show, setShow] = useState<boolean>(false)
+
+    const forgotPassword = () => {
+        let req = {mail: mail}
+        AuthApiImplService.forgotPassword(req).then(r => setShow(true))
+        .catch(e => {
+            createError(e)
+        })
+    }
+
+    return (
+    <div>
+    <ArrowBackIcon sx={{marginLeft: 1, marginTop: 1}} onClick={(e: any) => props.setForgot(false)}/>
+        <DialogContent>
+            <TextField
+                value={mail}
+                onChange={(e: any) => setMail(e.target.value)}
+                autoFocus
+                margin="dense"
+                id="mail"
+                label="Enter your mail"
+                type="mail"
+                fullWidth
+                variant="standard"
+            />
+            <Box sx={{ m: 3}}/>
+        </DialogContent>
+        <DialogActions>
+            <Button onClick={closeAuthTab}>Cancel</Button>
+            <Button onClick={forgotPassword}>Send mail request</Button>
+        </DialogActions>
+       <Dialog
+                open={show}
+                // onClose={(e:any)=>{
+                //     setShow(false);
+                //     closeAuthTab()
+                // }}
+                aria-labelledby="alert-dialog-title"
+                aria-describedby="alert-dialog-description"
+            >
+                <DialogTitle id="alert-dialog-title">
+                  {"Check your email"}
+                </DialogTitle>
+                <DialogContent>
+                <DialogContentText id="alert-dialog-description">
+                    {`Please check your email ${mail} and go via link to reset password`}
+                </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                <Button onClick={(e: any) => {setShow(false); closeAuthTab()}}>Ok</Button>
+                </DialogActions>
+            </Dialog>
+
+    </div>
+  )
+}
+
+const Register: FC<AuthProps> = (props: AuthProps) => {
 
     const [info, setInfo] = useState<RegisterRequest>({name: '', mail: '', password: ''})
     const [show, setShow] = useState<boolean>(false)
 
     const register = () => {
-        AuthApiImplService.register(info).then(r => setShow(true))
-        .catch(e => console.log(e))
+        AuthApiImplService.register(info)
+        .then(r => setShow(true))
+        .catch(e => createError(e))
     }
 
     return (
         <div hidden={props.value !== props.index} id={`simple-tabpanel-${props.index}`} aria-labelledby={`simple-tab-${props.index}`}>
-            <DialogTitle>Register</DialogTitle>
             <DialogContent>
                 <TextField
                     value={info.name}
@@ -148,7 +214,10 @@ export const Register: FC<AuthProps> = (props: AuthProps) => {
             </DialogActions>
             <Dialog
                 open={show}
-                onClose={(e:any)=>setShow(false)}
+                // onClose={(e:any)=>{
+                //     setShow(false);
+                //     closeAuthTab()
+                // }}
                 aria-labelledby="alert-dialog-title"
                 aria-describedby="alert-dialog-description"
             >

@@ -1,6 +1,5 @@
 import { Alert } from '@mui/material'
 import { useStore } from '@nanostores/react'
-import React from 'react'
 import { error } from '../../stores/security'
 
 

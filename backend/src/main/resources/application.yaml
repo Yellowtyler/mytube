@@ -20,7 +20,7 @@ spring:
       ddl-auto: update
 
 client:
-  url: http://localhost:8080
+  url: http://localhost:3000
 
 jwt:
   uri: /auth/**
@@ -52,3 +52,13 @@ mail:
   auth: true
   tls: true
   debug: true
+
+
+#logging:
+#  level:
+#    org.hibernate.SQL: DEBUG
+#    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+#    org.hibernate.type: TRACE
+#    org.springframework.web: DEBUG
+#    org.springframework.security: DEBUG
+#    org.springframework: TRACE
