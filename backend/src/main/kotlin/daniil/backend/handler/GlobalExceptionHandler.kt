@@ -45,6 +45,18 @@ class GlobalExceptionHandler {
             .body(ErrorResponse(ErrorCode.USER_HAS_NO_PERMISSION, e.message))
     }
 
+    @ExceptionHandler(UserNotRegisteredException::class)
+    fun handleUserNotRegisteredException(e: UserNotRegisteredException): ResponseEntity<ErrorResponse> {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+            .body(ErrorResponse(e.errorCode, e.message))
+    }
+
+    @ExceptionHandler(UserBlockedException::class)
+    fun handleUserBlockedException(e: UserBlockedException): ResponseEntity<ErrorResponse> {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+            .body(ErrorResponse(e.errorCode, e.message))
+    }
+
     @ExceptionHandler(ExpiredTokenException::class)
     fun handleExpiredTokenException(e: ExpiredTokenException): ResponseEntity<ErrorResponse> {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -74,4 +86,9 @@ class GlobalExceptionHandler {
             .body(ErrorResponse(ErrorCode.VALIDATION_ERROR, e.localizedMessage))
     }
 
+    @ExceptionHandler(Exception::class)
+    fun handleException(e: Exception): ResponseEntity<ErrorResponse> {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(ErrorResponse(ErrorCode.SERVICE_ERROR, "Service Error"))
+    }
 }

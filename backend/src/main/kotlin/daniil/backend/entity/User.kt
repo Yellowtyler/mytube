@@ -47,7 +47,7 @@ class User(
     open var ownChannel: Channel? = null,
 
     @OneToMany(fetch = FetchType.LAZY, targetEntity = Like::class)
-    open var likes: Set<Like>? = mutableSetOf()
+    open var likes: MutableSet<Like>? = mutableSetOf()
 
 ): UserDetails {
 

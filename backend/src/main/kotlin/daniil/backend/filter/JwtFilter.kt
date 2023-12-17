@@ -38,7 +38,8 @@ class JwtFilter(
             "doFilterInternal() - started with url=${request.requestURI}, query=${request.queryString} and headers=${request.headerNames}"
         }
 
-        if (jwtProperty.ignorePath.stream().noneMatch { s -> request.requestURI.contains(s) } && request.method != HttpMethod.OPTIONS.name()) {
+        if (jwtProperty.ignorePath.stream().noneMatch { s -> request.requestURI.contains(s) } && request.method != HttpMethod.OPTIONS.name()
+            && (request.method != HttpMethod.GET.name() && request.requestURI.startsWith("/api/channel"))) {
             log.debug{
                 "doFilterInternal() - validating token..."
             }

@@ -15,6 +15,10 @@ class TokenNotFoundException(override val message: String) : NotFoundException(
     errorCode = ErrorCode.TOKEN_NOT_FOUND, message = message
 )
 
+class ChannelNotFoundException(override val message: String): NotFoundException(
+    errorCode = ErrorCode.CHANNEL_NOT_FOUND, message = message
+)
+
 class UserAlreadyExistsException(override val message: String) : AbstractException(
     errorCode = ErrorCode.USER_ALREADY_EXISTS, message = message
 )
@@ -37,4 +41,12 @@ class BadPasswordException(override val message: String): AbstractException(
 
 class TokenAlreadyExistsException(override val message: String): AbstractException(
    errorCode = ErrorCode.TOKEN_ALREADY_EXISTS, message = message
+)
+
+class UserNotRegisteredException(override val message: String): AbstractException(
+   errorCode = ErrorCode.USER_NOT_REGISTERED, message = message
+)
+
+class UserBlockedException(override val message: String): AbstractException(
+    errorCode = ErrorCode.BLOCKED_USER, message = message
 )

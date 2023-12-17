@@ -15,6 +15,12 @@ class Channel(
     var name: String,
 
     @Column
+    var description: String,
+
+    @Column
+    var profilePhoto: String,
+
+    @Column
     val createdAt: OffsetDateTime,
 
     @Column
@@ -26,11 +32,26 @@ class Channel(
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinColumn(name ="user_id")
-    val subscribers: Set<User>,
+    val subscribers: MutableSet<User> = mutableSetOf(),
 
     @OneToMany(fetch = FetchType.LAZY)
-    val videos: Set<Video>
+    val videos: MutableSet<Video> = mutableSetOf()
 
     ) {
 
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Channel) return false
+
+        if (id != other.id) return false
+        if (name != other.name) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = id?.hashCode() ?: 0
+        result = 31 * result + name.hashCode()
+        return result
+    }
 }

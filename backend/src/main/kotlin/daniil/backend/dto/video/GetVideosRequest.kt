@@ -1,3 +1,5 @@
 package daniil.backend.dto.video
 
-data class GetVideosRequest(val page: Int, val size: Int)
+import java.util.UUID
+
+data class GetVideosRequest(val channelId: UUID, val name: String, val page: Int, val size: Int)

@@ -99,6 +99,10 @@ class UserApiImpl(
         userService.blockUser(userId, auth)
     }
 
+    override fun uploadProfilePhoto(req: UploadProfilePhotoRequest, auth: Authentication) {
+        TODO("Not yet implemented")
+    }
+
     @ApiResponses(
         value = [
             ApiResponse(

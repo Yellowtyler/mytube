@@ -1,6 +1,7 @@
 package daniil.backend.service.impl
 
 import daniil.backend.dto.auth.*
+import daniil.backend.entity.Channel
 import daniil.backend.entity.Token
 import daniil.backend.entity.User
 import daniil.backend.enums.TokenType
@@ -8,6 +9,7 @@ import daniil.backend.exception.*
 import daniil.backend.extension.throwTokenNotFound
 import daniil.backend.extension.throwUserNotFound
 import daniil.backend.property.ClientProperty
+import daniil.backend.repository.ChannelRepository
 import daniil.backend.repository.TokenRepository
 import daniil.backend.repository.UserRepository
 import daniil.backend.service.AuthService
@@ -25,6 +27,7 @@ import java.util.*
 class AuthServiceImpl(
     @Autowired private val userRepository: UserRepository,
     @Autowired private val tokenRepository: TokenRepository,
+    @Autowired private val channelRepository: ChannelRepository,
     @Autowired private val tokenService: TokenService,
     @Autowired private val mailService: MailService,
     @Autowired private val passwordEncoder: PasswordEncoder,
@@ -64,7 +67,12 @@ class AuthServiceImpl(
 
     override fun login(req: LoginRequest): LoginResponse {
         val user: User = userRepository.findByName(req.name) ?: throwUserNotFound(req.name)
-
+        if (!user.isRegistered) {
+            throw UserNotRegisteredException("user is not registered. Confirm your registration via mail")
+        }
+        if (user.isBlocked) {
+            throw UserBlockedException("user ${req.name} is blocked!")
+        }
         if (!passwordEncoder.matches(req.password, user.password)) {
             logger.error { "login() - wrong password for ${req.name}" }
             throw WrongPasswordException("wrong password")
@@ -108,7 +116,13 @@ class AuthServiceImpl(
         }
         val user = tokenEntity.user
         user.isRegistered = true
-        userRepository.save(user)
+        val savedUser = userRepository.save(user)
+        val newChannel = Channel(
+            null, savedUser.name + UUID.randomUUID(),
+            "type description here", "", OffsetDateTime.now(),
+            false, savedUser, mutableSetOf(), mutableSetOf()
+        )
+        channelRepository.save(newChannel)
         tokenRepository.delete(tokenEntity)
     }
 

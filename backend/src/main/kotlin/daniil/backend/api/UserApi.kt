@@ -10,5 +10,6 @@ interface UserApi {
     fun getUserByToken(auth: Authentication): ResponseEntity<UserShortDto>
     fun getUsers(req: GetUsersRequest, auth: Authentication): ResponseEntity<GetUsersResponse>
     fun blockUser(userId: UUID, auth: Authentication)
+    fun uploadProfilePhoto(req: UploadProfilePhotoRequest, auth: Authentication)
     fun updateRole(req: UpdateRoleRequest, auth: Authentication)
 }
