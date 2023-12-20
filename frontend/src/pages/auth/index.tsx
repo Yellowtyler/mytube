@@ -114,8 +114,8 @@ const ForgotPassword: FC<ForgotPasswordProps> = (props: ForgotPasswordProps) => 
     }
 
     return (
-    <div>
-    <ArrowBackIcon sx={{marginLeft: 1, marginTop: 1}} onClick={(e: any) => props.setForgot(false)}/>
+    <Box>
+    <ArrowBackIcon sx={{marginLeft: 1, marginTop: 1, color: '#e53935'}} style={{cursor: 'pointer'}} onClick={(e: any) => props.setForgot(false)}/>
         <DialogContent>
             <TextField
                 value={mail}
@@ -136,10 +136,6 @@ const ForgotPassword: FC<ForgotPasswordProps> = (props: ForgotPasswordProps) => 
         </DialogActions>
        <Dialog
                 open={show}
-                // onClose={(e:any)=>{
-                //     setShow(false);
-                //     closeAuthTab()
-                // }}
                 aria-labelledby="alert-dialog-title"
                 aria-describedby="alert-dialog-description"
             >
@@ -156,7 +152,7 @@ const ForgotPassword: FC<ForgotPasswordProps> = (props: ForgotPasswordProps) => 
                 </DialogActions>
             </Dialog>
 
-    </div>
+    </Box>
   )
 }
 
@@ -214,10 +210,6 @@ const Register: FC<AuthProps> = (props: AuthProps) => {
             </DialogActions>
             <Dialog
                 open={show}
-                // onClose={(e:any)=>{
-                //     setShow(false);
-                //     closeAuthTab()
-                // }}
                 aria-labelledby="alert-dialog-title"
                 aria-describedby="alert-dialog-description"
             >

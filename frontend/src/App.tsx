@@ -6,6 +6,7 @@ import { Home } from './pages/home';
 import { ThemeProvider } from '@emotion/react';
 import { createTheme } from '@mui/material';
 import ResetPassword from './pages/reset-password';
+import { Settings } from './pages/settings';
 
 function App() {
   
@@ -29,6 +30,7 @@ function App() {
       <Route path='/' element={<Layout />}>
         <Route index element={<Home />} />
         <Route path='/reset-password/*' element={<ResetPassword/>}/>
+        <Route path='/settings' element={<Settings/>} />
         {/* Using path="*"" means "match anything", so this route
               acts like a catch-all for URLs that we don't have explicit
               routes for. */}
