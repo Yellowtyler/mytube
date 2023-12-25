@@ -11,5 +11,7 @@ interface UserRepository: JpaRepository<User, UUID>, JpaSpecificationExecutor<Us
     fun findByName(name: String): User?
     fun existsByNameOrMail(name: String, mail: String): Boolean
     fun findByMail(mail: String): User?
+    fun existsByName(name: String): Boolean
+    fun existsByMail(mail: String): Boolean
 
 }

@@ -92,7 +92,7 @@ class JwtService(
     }
 
     override fun deleteExpiredToken(claims: Claims, token: String) {
-        val username = claims.getOrDefault("name", "") as String
+        val username = claims.getOrDefault("sub", "") as String
         val user: User = userRepository.findByName(username)
             ?: throw UserNotFoundException("user $username wasn't found")
         user.token = null

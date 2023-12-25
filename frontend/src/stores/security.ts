@@ -1,12 +1,14 @@
 import { persistentAtom } from "@nanostores/persistent";
 import { action, atom, computed } from "nanostores";
-import { AuthApiImplService, LoginRequest } from "../api";
+import { AuthApiImplService, LoginRequest, OpenAPI } from "../api";
 import { ErrorCode, ErrorResponse } from "../api/models/ErrorResponse";
 
 export let openAuth = atom<boolean>(false)
 
-export const openAuthTab = () => openAuth.set(true)
-
+export const openAuthTab = () => {
+  error.set(null)
+  openAuth.set(true)
+}
 export const closeAuthTab = () => openAuth.set(false)
 
 let data = persistentAtom<string | null>('token', null, {
@@ -42,6 +44,7 @@ export let token = computed(
 
 export let addToken = action(data, 'add', (store, tokenValue: string) => {
     store.set(tokenValue)
+    OpenAPI.TOKEN = tokenValue
 })
   
 export let removeToken = action(data, 'remove', store => {
@@ -94,11 +97,14 @@ export const createError = (error_: any) => {
       }
 
       if (!errorResponseValue.body) {
-        errorResponseValue.body = {message: "Service in unavailable", code: ErrorCode.SERVICE_ERROR}
+        errorResponseValue.body = {message: "Service is unavailable", code: ErrorCode.SERVICE_ERROR}
       } 
       
       error.set({
           message: errorResponseValue.body?.message,
           code: errorResponseValue.body?.code ?? ErrorCode.UNKNOWN_ERROR        
       })
+      console.log(error)
 }
+
+export const clearError = () => error.set(null)

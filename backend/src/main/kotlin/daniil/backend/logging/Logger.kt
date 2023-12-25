@@ -1,6 +1,5 @@
 package daniil.backend.logging
 
-import daniil.backend.dto.auth.ChangePasswordRequest
 import daniil.backend.dto.auth.LoginRequest
 import daniil.backend.dto.auth.RegisterRequest
 import daniil.backend.dto.auth.ResetPasswordRequest
@@ -34,7 +33,6 @@ class Logger {
             when (it) {
                 is LoginRequest -> "name=${it.name}"
                 is RegisterRequest -> "name=${it.name},mail=${it.mail}"
-                is ChangePasswordRequest -> "name=${it.name}"
                 is ResetPasswordRequest -> "token=${it.token}"
                 else -> it
             }

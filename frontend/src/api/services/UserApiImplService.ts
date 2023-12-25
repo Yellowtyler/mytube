@@ -2,17 +2,33 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { EditUserRequest } from '../models/EditUserRequest';
 import type { GetUsersRequest } from '../models/GetUsersRequest';
 import type { GetUsersResponse } from '../models/GetUsersResponse';
 import type { UpdateRoleRequest } from '../models/UpdateRoleRequest';
 import type { UserDto } from '../models/UserDto';
-import type { UserShortDto } from '../models/UserShortDto';
 
-import type { CancelablePromise } from '.././core/CancelablePromise';
-import { OpenAPI } from '.././core/OpenAPI';
-import { request as __request } from '.././core/request';
+import type { CancelablePromise } from '../core/CancelablePromise';
+import { OpenAPI } from '../core/OpenAPI';
+import { request as __request } from '../core/request';
 
 export class UserApiImplService {
+
+    /**
+     * @param requestBody 
+     * @returns any OK
+     * @throws ApiError
+     */
+    public static editUser(
+requestBody: EditUserRequest,
+): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'PUT',
+            url: '/api/user',
+            body: requestBody,
+            mediaType: 'application/json',
+        });
+    }
 
     /**
      * @param requestBody 
@@ -80,13 +96,19 @@ id: string,
     }
 
     /**
-     * @returns UserShortDto successfully received user
+     * @param authorization 
+     * @returns UserDto successfully received user
      * @throws ApiError
      */
-    public static getUserByToken(): CancelablePromise<UserShortDto> {
+    public static getUserByToken(
+authorization: string,
+): CancelablePromise<UserDto> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/user/token',
+            headers: {
+                'Authorization': authorization,
+            },
             errors: {
                 401: `User is unauthorized`,
                 403: `User doesn't have permission to resource`,

@@ -8,6 +8,7 @@ import java.util.*
 @Table(name = "channel")
 class Channel(
     @Id
+    @GeneratedValue
     @Column
     var id: UUID?,
 
@@ -18,7 +19,10 @@ class Channel(
     var description: String,
 
     @Column
-    var profilePhoto: String,
+    var profilePhoto: String? = null,
+
+    @Column
+    var backgroundPhoto: String? = null,
 
     @Column
     val createdAt: OffsetDateTime,
@@ -38,7 +42,6 @@ class Channel(
     val videos: MutableSet<Video> = mutableSetOf()
 
     ) {
-
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is Channel) return false
@@ -54,4 +57,5 @@ class Channel(
         result = 31 * result + name.hashCode()
         return result
     }
+
 }

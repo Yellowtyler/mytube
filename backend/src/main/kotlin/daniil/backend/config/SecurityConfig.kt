@@ -24,10 +24,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 @EnableWebSecurity
 @Configuration
 class SecurityConfig (
-    @Autowired
-    private val jwtFilter: JwtFilter,
-   @Autowired
-    private val clientProperty: ClientProperty
+    @Autowired private val jwtFilter: JwtFilter,
+    @Autowired private val clientProperty: ClientProperty
 ){
 
     @Bean
@@ -38,12 +36,14 @@ class SecurityConfig (
             sessionManagement {
                 sessionCreationPolicy = SessionCreationPolicy.STATELESS
             }
+            addFilterBefore<UsernamePasswordAuthenticationFilter>(jwtFilter)
             authorizeRequests {
-                authorize("/api/auth/login", permitAll)
-                authorize("/api/auth/register", permitAll)
-                authorize("/api/auth/reset-password", permitAll)
-                authorize("/api/auth/change-password", authenticated)
-                authorize("/api/auth/forgot-password", permitAll)
+                authorize(HttpMethod.POST, "/api/auth/login", permitAll)
+                authorize(HttpMethod.POST, "/api/auth/register", permitAll)
+                authorize(HttpMethod.POST, "/api/auth/reset-password", permitAll)
+                authorize(HttpMethod.POST, "/api/auth/change-password", authenticated)
+                authorize(HttpMethod.POST, "/api/auth/logout", authenticated)
+                authorize(HttpMethod.POST, "/api/auth/forgot-password", permitAll)
                 authorize(HttpMethod.POST, "/api/auth/logout", authenticated)
                 authorize(HttpMethod.POST, "/api/video/**", authenticated)
                 authorize(HttpMethod.POST, "/api/channel/**", authenticated)
@@ -51,11 +51,14 @@ class SecurityConfig (
                 authorize(HttpMethod.DELETE, "/api/channel/**", hasRole("MODERATOR"))
                 authorize(HttpMethod.GET, "/api/channel/**", permitAll)
                 authorize(HttpMethod.GET, "/api/channel/**", permitAll)
-                authorize("/api/user/**", authenticated)
-                authorize("/api/channel/**", authenticated)
+                authorize(HttpMethod.GET, "/api/user/**", authenticated)
+                authorize(HttpMethod.POST, "/api/user/**", authenticated)
+                authorize(HttpMethod.PATCH, "/api/user/**", authenticated)
+                authorize(HttpMethod.POST, "/api/image/**", authenticated)
+                authorize(HttpMethod.GET, "/api/image/**", authenticated)
                 authorize(HttpMethod.OPTIONS, "/**", permitAll)
+                authorize("/error", permitAll)
             }
-            addFilterBefore<UsernamePasswordAuthenticationFilter>(jwtFilter)
             exceptionHandling {
                 authenticationEntryPoint = AuthenticationEntryPoint { request, response, authException ->  response.sendError(HttpServletResponse.SC_UNAUTHORIZED) }
             }

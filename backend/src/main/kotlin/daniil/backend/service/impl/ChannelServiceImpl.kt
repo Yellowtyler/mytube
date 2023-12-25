@@ -5,19 +5,23 @@ import daniil.backend.entity.Channel
 import daniil.backend.entity.User
 import daniil.backend.enums.UserRole
 import daniil.backend.exception.UserHasNoPermissionException
-import daniil.backend.extension.getRole
-import daniil.backend.extension.throwChannelNotFound
-import daniil.backend.extension.throwUserNotFound
+import daniil.backend.extension.*
 import daniil.backend.mapper.ChannelMapper
 import daniil.backend.repository.ChannelRepository
 import daniil.backend.repository.UserRepository
 import daniil.backend.service.ChannelService
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.jpa.domain.Specification
 import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Service
+import org.springframework.web.multipart.MultipartFile
+import java.nio.file.Files
+import java.nio.file.NoSuchFileException
+import java.nio.file.Path
+import java.nio.file.Paths
 import java.util.*
 import kotlin.math.abs
 
@@ -28,8 +32,11 @@ class ChannelServiceImpl(
     @Autowired private val userRepository: UserRepository
 ): ChannelService {
 
-    override fun getChannel(id: UUID): ChannelDto {
-        val channel = channelRepository.findById(id).orElseThrow {  throwChannelNotFound(id) }
+    val logger = KotlinLogging.logger {  }
+
+    override fun getChannel(auth: Authentication): ChannelDto {
+        val user = userRepository.findByName(auth.name) ?: throwUserNotFound(auth.name)
+        val channel = user.ownChannel!!
         return channelMapper.toDto(channel)
     }
 
@@ -105,5 +112,60 @@ class ChannelServiceImpl(
         channel.name = req.name
         channel.description = req.description
         channelRepository.save(channel)
+    }
+
+    override fun uploadPhoto(type: String, file: MultipartFile, auth: Authentication) {
+        val dir = if (type == "profile") {
+            PROFILE_PHOTOS_DIR
+        } else {
+            BACKGROUND_DIR
+        }
+        val dirPath = Path.of(dir)
+        if (!Files.exists(dirPath))
+            Files.createDirectory(dirPath)
+
+        val splittedFileName = file.originalFilename!!.split(".")
+        if (splittedFileName.size != 2) {
+            throw Exception("file doesn't have type")
+        }
+        val fileName = splittedFileName[0] + UUID.randomUUID() + "." + splittedFileName[1]
+        val filePath = Paths.get(PROFILE_PHOTOS_DIR, fileName)
+        Files.write(filePath, file.bytes)
+
+        val user = userRepository.findByName(auth.name) ?: throwUserNotFound(auth.name)
+        val channel = user.ownChannel!!
+        if (type == "profile")
+            channel.profilePhoto = fileName
+        else
+            channel.backgroundPhoto = fileName
+        channelRepository.save(channel)
+    }
+
+    override fun getPhoto(type: String, auth: Authentication): ByteArray {
+        val user = userRepository.findByName(auth.name) ?: throwUserNotFound(auth.name)
+        val channel = user.ownChannel!!
+
+        val fileName = if (type == "profile") {
+            channel.profilePhoto
+        } else {
+            channel.backgroundPhoto
+        }
+        val dir = if (type == "profile") {
+            PROFILE_PHOTOS_DIR
+        } else {
+            BACKGROUND_DIR
+        }
+
+        val dirPath = Path.of(dir)
+        if (!Files.exists(dirPath))
+            Files.createDirectory(dirPath)
+
+        return try {
+            val fileNamePath = Paths.get(dir, fileName)
+            Files.readAllBytes(fileNamePath)
+        } catch (e: NoSuchFileException) {
+            logger.warn { "getPhoto() - $fileName doesn't exist" }
+            ByteArray(0)
+        }
     }
 }

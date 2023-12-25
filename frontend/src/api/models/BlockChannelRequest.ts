@@ -3,7 +3,6 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type ChangePasswordRequest = {
-    oldPassword: string;
-    newPassword: string;
+export type BlockChannelRequest = {
+    channelId: string;
 };

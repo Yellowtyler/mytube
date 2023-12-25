@@ -1,19 +1,21 @@
 import { atom, onMount } from "nanostores";
-import { UserApiImplService, UserShortDto } from "../api";
-import { token } from "./security";
+import { UserApiImplService, UserDto} from "../api";
+import { createError, logout, token } from "./security";
+import { ErrorCode } from "../api/models/ErrorResponse";
 
-export const currentUser = atom<UserShortDto | null>(null)
+export const currentUser = atom<UserDto | null>(null)
 
 export const loading = atom<boolean>(true)
 
-export const addUser = (user: UserShortDto) => {
+export const addUser = (user: UserDto) => {
     currentUser.set(user)
 }
 
-export const fetchUser: () => Promise<void | UserShortDto> | null = () => {
+export const fetchUser: () => Promise<void | UserDto> | null = () => {
     let tokenData = token.get().data
     if (tokenData) {
-        return UserApiImplService.getUserByToken().then(r => {
+        let headerVal = "Bearer " + tokenData 
+        return UserApiImplService.getUserByToken(headerVal).then(r => {
             addUser(r)
             return r
         })
@@ -29,11 +31,17 @@ onMount(currentUser, () => {
     if (loadingValue) {
         let tokenData = token.get().data
         if (tokenData) {
-            UserApiImplService.getUserByToken().then(r => {
+            let headerVal = "Bearer " + tokenData 
+            console.log(headerVal)
+            UserApiImplService.getUserByToken(headerVal).then(r => {
                 addUser(r)
                 loading.set(false)
             })
-            .catch(e => console.log(e))
-        }   
+            .catch(e => {
+                createError({body: {message: 'User is unauthorized', code: ErrorCode.EXPIRED_TOKEN}})
+                logout()
+            })
+        } 
+    
     }    
 })

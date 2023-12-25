@@ -54,11 +54,12 @@ mail:
   debug: true
 
 
-#logging:
-#  level:
-#    org.hibernate.SQL: DEBUG
-#    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
-#    org.hibernate.type: TRACE
-#    org.springframework.web: DEBUG
-#    org.springframework.security: DEBUG
-#    org.springframework: TRACE
+logging:
+  level:
+    daniil.backend: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.hibernate.type: TRACE
+    org.springframework.web: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework: TRACE

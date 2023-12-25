@@ -16,9 +16,9 @@ class ChannelApiImpl(
     @Autowired private val channelService: ChannelService
 ): ChannelApi {
 
-    @GetMapping("/{id}")
-    override fun getChannel(@PathVariable id: UUID): ResponseEntity<ChannelDto> {
-        return ResponseEntity.ok(channelService.getChannel(id))
+    @GetMapping
+    override fun getChannel(auth: Authentication): ResponseEntity<ChannelDto> {
+        return ResponseEntity.ok(channelService.getChannel(auth))
     }
 
 

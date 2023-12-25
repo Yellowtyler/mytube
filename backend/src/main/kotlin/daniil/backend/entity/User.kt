@@ -19,7 +19,7 @@ class User(
     open var id: UUID? = null,
 
     @Column(unique = true, nullable = false)
-    open val name: String,
+    open var name: String,
 
     @Column(unique = true, nullable = false)
     open var mail: String,

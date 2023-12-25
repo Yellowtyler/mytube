@@ -96,8 +96,10 @@ class AuthServiceImpl(
             throw ExpiredTokenException("token ${req.token} has been expired")
         }
 
-        if (req.newPassword.length < 8)
+        if (req.newPassword.length < 8) {
+            logger.error { "changePassword() - password must contain more than 7 characters" }
             throw BadPasswordException("password must contain more than 7 characters")
+        }
 
         val user = tokenEntity.user
 
@@ -115,26 +117,35 @@ class AuthServiceImpl(
             throw ExpiredTokenException("token $token has been expired")
         }
         val user = tokenEntity.user
-        user.isRegistered = true
-        val savedUser = userRepository.save(user)
         val newChannel = Channel(
-            null, savedUser.name + UUID.randomUUID(),
-            "type description here", "", OffsetDateTime.now(),
-            false, savedUser, mutableSetOf(), mutableSetOf()
+            null, user.name + UUID.randomUUID(),
+            "type description here", null, null, OffsetDateTime.now(),
+            false, user, mutableSetOf(), mutableSetOf()
         )
-        channelRepository.save(newChannel)
+
+        val savedChannel = channelRepository.save(newChannel)
+        user.isRegistered = true
+        user.ownChannel = savedChannel
+        userRepository.save(user)
         tokenRepository.delete(tokenEntity)
     }
 
     override fun changePassword(req: ChangePasswordRequest, auth: Authentication) {
         val user = userRepository.findByName(auth.name) ?: throwUserNotFound(auth.name)
 
-        if (req.newPassword.length < 8)
-            throw BadPasswordException("password must contain more than 7 characters")
-
         if (!passwordEncoder.matches(req.oldPassword, user.password)) {
-            logger.error { "changePassword() - wrong password for ${user.name}" }
+            logger.error { "changePassword() - wrong password for ${auth.name}" }
             throw WrongPasswordException("wrong password!")
+        }
+
+        if (req.newPassword.length < 8) {
+            logger.error { "changePassword() - password must contain more than 7 characters" }
+            throw BadPasswordException("password must contain more than 7 characters")
+        }
+
+        if (!passwordEncoder.matches(req.newPassword, user.password)) {
+            logger.error { "changePassword() - new password matches old password" }
+            throw BadPasswordException("new password matches old password")
         }
 
         val newPassword = passwordEncoder.encode(req.newPassword)

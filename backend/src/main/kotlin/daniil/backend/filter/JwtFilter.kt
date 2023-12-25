@@ -38,15 +38,14 @@ class JwtFilter(
             "doFilterInternal() - started with url=${request.requestURI}, query=${request.queryString} and headers=${request.headerNames}"
         }
 
-        if (jwtProperty.ignorePath.stream().noneMatch { s -> request.requestURI.contains(s) } && request.method != HttpMethod.OPTIONS.name()
-            && (request.method != HttpMethod.GET.name() && request.requestURI.startsWith("/api/channel"))) {
+        if (jwtProperty.ignorePath.stream().noneMatch { s -> request.requestURI.contains(s) } && request.method != HttpMethod.OPTIONS.name()) {
             log.debug{
                 "doFilterInternal() - validating token..."
             }
-            val authHeader: String = request.getHeader("Authorization")
+            val authHeader: String? = request.getHeader("Authorization")
             if (Objects.nonNull(authHeader)) {
 
-                val headerVals = authHeader.split(" ")
+                val headerVals = authHeader!!.split(" ")
                 if (headerVals.size != 2) {
                     response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "auth header is wrong or absent")
                 }

@@ -6,11 +6,9 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import { Menu } from '@mui/material';
 import SettingsIcon from '@mui/icons-material/Settings';
-import { logout, openAuthTab, token } from "../../stores/security";
-import LoginIcon from '@mui/icons-material/Login'
+import { logout } from "../../stores/security";
 import LogoutIcon from '@mui/icons-material/Logout'
-import { useStore } from "@nanostores/react";
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 type RightMenuProps = {
     anchor: HTMLElement | null;
@@ -19,7 +17,6 @@ type RightMenuProps = {
 }
 
 export const RightMenu: FC<RightMenuProps> = (props: RightMenuProps) => {
-    const tokenVal = useStore(token)
     const navigate = useNavigate()
 
     const open = Boolean(props.anchor)
@@ -35,21 +32,17 @@ export const RightMenu: FC<RightMenuProps> = (props: RightMenuProps) => {
           <ListItemText>Settings</ListItemText>
        </MenuItem>
         <Divider />
-           {!tokenVal.data ? 
-            <MenuItem onClick={(e:any) => {openAuthTab(); handleClose();}}>
-                <ListItemIcon> 
-                <LoginIcon  />
-                </ListItemIcon>
-                <ListItemText>Login</ListItemText>    
-            </MenuItem>
-            :     
-            <MenuItem onClick={(e:any) => {logout(); handleClose();}}>
+           <MenuItem onClick={(e:any) => {
+                  logout(); 
+                  navigate('/');
+                  handleClose();
+              }}
+            >
                 <ListItemIcon> 
                 <LogoutIcon  />
                  </ListItemIcon>
                 <ListItemText>Logout</ListItemText>    
             </MenuItem>
-            }
       </Menu>
-    )
+  )
 }

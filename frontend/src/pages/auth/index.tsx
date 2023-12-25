@@ -1,10 +1,11 @@
 import { FC, useState } from "react";
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormLabel, Tab, Tabs, TextField } from "@mui/material";
 import { useStore } from "@nanostores/react";
-import { auth, closeAuthTab, createError, error, openAuth } from "../../stores/security";
+import { auth, clearError, closeAuthTab, createError, error, openAuth } from "../../stores/security";
 import ErrorAlert from "../../ui/error-alert";
 import { AuthApiImplService, RegisterRequest } from "../../api";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
+import { useNavigate } from "react-router-dom";
 
 export type AuthProps = {
     value: number;
@@ -48,11 +49,11 @@ const Login: FC<AuthProps> = (props: AuthProps) => {
     const [name, setName] = useState<string>('')
     const [password, setPassword] = useState<string>('')
     const [forgot, setForgot] = useState<boolean>(false)
-
-
+    const navigate = useNavigate()
+    
     const login = () => {
         let req = {name: name, password: password}
-        auth(req)
+        auth(req).then(r=>navigate('/'))
     }
 
     return (
@@ -86,8 +87,8 @@ const Login: FC<AuthProps> = (props: AuthProps) => {
                 <FormLabel style={{cursor: 'pointer'}} onClick={(e: any) => setForgot(true)}>Forget password?</FormLabel>
             </DialogContent>
             <DialogActions>
-                <Button onClick={closeAuthTab}>Cancel</Button>
                 <Button onClick={login}>Login</Button>
+                <Button onClick={closeAuthTab}>Cancel</Button>
             </DialogActions>
             </div>
             : <ForgotPassword setForgot={setForgot}/>
@@ -104,6 +105,7 @@ const ForgotPassword: FC<ForgotPasswordProps> = (props: ForgotPasswordProps) => 
 
     const [mail, setMail] = useState<string>('') 
     const [show, setShow] = useState<boolean>(false)
+    const navigate = useNavigate()
 
     const forgotPassword = () => {
         let req = {mail: mail}
@@ -131,8 +133,8 @@ const ForgotPassword: FC<ForgotPasswordProps> = (props: ForgotPasswordProps) => 
             <Box sx={{ m: 3}}/>
         </DialogContent>
         <DialogActions>
-            <Button onClick={closeAuthTab}>Cancel</Button>
             <Button onClick={forgotPassword}>Send mail request</Button>
+            <Button onClick={closeAuthTab}>Cancel</Button>
         </DialogActions>
        <Dialog
                 open={show}
@@ -148,7 +150,12 @@ const ForgotPassword: FC<ForgotPasswordProps> = (props: ForgotPasswordProps) => 
                 </DialogContentText>
                 </DialogContent>
                 <DialogActions>
-                <Button onClick={(e: any) => {setShow(false); closeAuthTab()}}>Ok</Button>
+                <Button onClick={(e: any) => {
+                    setShow(false); 
+                    closeAuthTab();
+                    navigate('');
+                    clearError()
+                }}>Ok</Button>
                 </DialogActions>
             </Dialog>
 
@@ -160,6 +167,7 @@ const Register: FC<AuthProps> = (props: AuthProps) => {
 
     const [info, setInfo] = useState<RegisterRequest>({name: '', mail: '', password: ''})
     const [show, setShow] = useState<boolean>(false)
+    const navigate = useNavigate()
 
     const register = () => {
         AuthApiImplService.register(info)
@@ -205,8 +213,8 @@ const Register: FC<AuthProps> = (props: AuthProps) => {
                 />
                 </DialogContent>
             <DialogActions>
-                <Button onClick={closeAuthTab}>Cancel</Button>
                 <Button onClick={register}>Register</Button>
+                <Button onClick={closeAuthTab}>Cancel</Button>
             </DialogActions>
             <Dialog
                 open={show}
@@ -222,7 +230,12 @@ const Register: FC<AuthProps> = (props: AuthProps) => {
                 </DialogContentText>
                 </DialogContent>
                 <DialogActions>
-                <Button onClick={(e: any) => setShow(false)}>Ok</Button>
+                <Button onClick={(e: any) => {
+                    setShow(false)
+                    closeAuthTab()
+                    navigate('/')
+                    clearError()
+                }}>Ok</Button>
                 </DialogActions>
             </Dialog>
         </div>

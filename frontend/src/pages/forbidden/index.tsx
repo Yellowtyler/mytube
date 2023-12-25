@@ -5,7 +5,6 @@ type Props = {}
 const Forbidden = (props: Props) => {
   return (
     <div>Forbidden
-
     </div>
   )
 }
