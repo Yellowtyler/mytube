@@ -34,10 +34,11 @@ class ChannelServiceImpl(
 
     val logger = KotlinLogging.logger {  }
 
-    override fun getChannel(auth: Authentication): ChannelDto {
-        val user = userRepository.findByName(auth.name) ?: throwUserNotFound(auth.name)
-        val channel = user.ownChannel!!
-        return channelMapper.toDto(channel)
+    override fun getChannel(id: UUID, auth: Authentication): ChannelDto {
+        val channel = channelRepository.findById(id).orElseThrow { throwChannelNotFound(id) }
+        val dto = channelMapper.toDto(channel)
+        dto.videosCount = channel.videos.size
+        return dto
     }
 
     override fun getChannels(req: GetChannelsRequest, auth: Authentication): GetChannelsResponse {
@@ -45,7 +46,7 @@ class ChannelServiceImpl(
             val pageRequest = PageRequest.of(req.page, req.size)
             val channels = channelRepository.findAll(pageRequest)
             return GetChannelsResponse(
-                channels.map { channelMapper.toDto(it) }.toList(),
+                channels.map { channelMapper.toShortDto(it) }.toList(),
                 channels.totalPages, channels.number, channels.totalElements
             )
         }
@@ -66,13 +67,13 @@ class ChannelServiceImpl(
             )
             val randomChannels: Page<Channel> = channelRepository.findAll(pageRequestForUnsubscribedChannels)
             return GetChannelsResponse(
-                subscribedChannels.toList().plus(randomChannels.toList()).map { channelMapper.toDto(it) },
+                subscribedChannels.toList().plus(randomChannels.toList()).map { channelMapper.toShortDto(it) },
                 randomChannels.totalPages, randomChannels.number, randomChannels.totalElements
             )
         }
         
         return GetChannelsResponse(
-            subscribedChannels.toList().map { channelMapper.toDto(it) },
+            subscribedChannels.toList().map { channelMapper.toShortDto(it) },
             subscribedChannels.totalPages, subscribedChannels.number, subscribedChannels.totalElements
         )
 
@@ -114,7 +115,11 @@ class ChannelServiceImpl(
         channelRepository.save(channel)
     }
 
-    override fun uploadPhoto(type: String, file: MultipartFile, auth: Authentication) {
+    override fun uploadPhoto(type: String, userId: UUID, file: MultipartFile, auth: Authentication) {
+        val user = userRepository.findById(userId).orElseThrow { throwUserNotFound(userId) }
+        if (user.id != userId) {
+            throw UserHasNoPermissionException("user ${auth.name} can't edit other users' images")
+        }
         val dir = if (type == "profile") {
             PROFILE_PHOTOS_DIR
         } else {
@@ -129,11 +134,10 @@ class ChannelServiceImpl(
             throw Exception("file doesn't have type")
         }
         val fileName = splittedFileName[0] + UUID.randomUUID() + "." + splittedFileName[1]
-        val filePath = Paths.get(PROFILE_PHOTOS_DIR, fileName)
+        val filePath = Paths.get(dir, fileName)
         Files.write(filePath, file.bytes)
 
-        val user = userRepository.findByName(auth.name) ?: throwUserNotFound(auth.name)
-        val channel = user.ownChannel!!
+           val channel = user.ownChannel!!
         if (type == "profile")
             channel.profilePhoto = fileName
         else
@@ -141,8 +145,11 @@ class ChannelServiceImpl(
         channelRepository.save(channel)
     }
 
-    override fun getPhoto(type: String, auth: Authentication): ByteArray {
-        val user = userRepository.findByName(auth.name) ?: throwUserNotFound(auth.name)
+    override fun getPhoto(type: String, userId: UUID, auth: Authentication): ByteArray {
+        val user = userRepository.findById(userId).orElseThrow { throwUserNotFound(userId) }
+        if (user.id != userId) {
+            throw UserHasNoPermissionException("user ${auth.name} can't edit other users' images")
+        }
         val channel = user.ownChannel!!
 
         val fileName = if (type == "profile") {

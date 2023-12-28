@@ -16,17 +16,6 @@ import { request as __request } from '../core/request';
 export class ChannelApiImplService {
 
     /**
-     * @returns ChannelDto OK
-     * @throws ApiError
-     */
-    public static getChannel(): CancelablePromise<ChannelDto> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/channel',
-        });
-    }
-
-    /**
      * @param requestBody 
      * @returns any OK
      * @throws ApiError
@@ -75,18 +64,18 @@ requestBody: BlockChannelRequest,
     }
 
     /**
-     * @param req 
-     * @returns GetChannelsResponse OK
+     * @param id 
+     * @returns ChannelDto OK
      * @throws ApiError
      */
-    public static getChannels(
-req: GetChannelsRequest,
-): CancelablePromise<GetChannelsResponse> {
+    public static getChannel(
+id: string,
+): CancelablePromise<ChannelDto> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/channel/all',
-            query: {
-                'req': req,
+            url: '/api/channel/{id}',
+            path: {
+                'id': id,
             },
         });
     }
@@ -104,6 +93,23 @@ id: string,
             url: '/api/channel/{id}',
             path: {
                 'id': id,
+            },
+        });
+    }
+
+    /**
+     * @param req 
+     * @returns GetChannelsResponse OK
+     * @throws ApiError
+     */
+    public static getChannels(
+req: GetChannelsRequest,
+): CancelablePromise<GetChannelsResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/channel/all',
+            query: {
+                'req': req,
             },
         });
     }

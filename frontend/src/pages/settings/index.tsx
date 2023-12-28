@@ -33,7 +33,7 @@ export const Settings: FC = () => {
         if (currUser) {
             setNewName(currUser!.name)
             setNewMail(currUser!.mail)
-            getImage('profile').then(r => {
+            getImage('profile', currUser.id).then(r => {
                 const data = r.data as Blob
                 let newVal = data.size === 0 ? image : URL.createObjectURL(data)  
                 setSelectedFile(newVal)
@@ -58,7 +58,7 @@ export const Settings: FC = () => {
 
     const handleUploadImage = (event: any) => {
         const file = event.target.files[0]
-        uploadImage('profile', file)
+        uploadImage('profile', currUser!.id, file)
         const fileReader = new FileReader();
         fileReader.addEventListener("load", () => {
             setSelectedFile(fileReader.result)

@@ -10,5 +10,6 @@ data class UserDto (
     val mail: String,
     val createdAt: OffsetDateTime,
     val role: UserRole,
+    var channelId: UUID?,
     val isBlocked: Boolean
 )

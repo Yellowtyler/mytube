@@ -1,6 +1,6 @@
 import { atom, onMount } from "nanostores";
 import { UserApiImplService, UserDto} from "../api";
-import { createError, logout, token } from "./security";
+import { createError, logout, removeToken, token } from "./security";
 import { ErrorCode } from "../api/models/ErrorResponse";
 
 export const currentUser = atom<UserDto | null>(null)
@@ -32,14 +32,14 @@ onMount(currentUser, () => {
         let tokenData = token.get().data
         if (tokenData) {
             let headerVal = "Bearer " + tokenData 
-            console.log(headerVal)
             UserApiImplService.getUserByToken(headerVal).then(r => {
                 addUser(r)
                 loading.set(false)
             })
             .catch(e => {
                 createError({body: {message: 'User is unauthorized', code: ErrorCode.EXPIRED_TOKEN}})
-                logout()
+                removeToken()
+                window.location.href = 'http://localhost:3000'
             })
         } 
     

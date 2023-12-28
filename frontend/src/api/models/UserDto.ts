@@ -9,6 +9,7 @@ export type UserDto = {
     mail: string;
     createdAt: string;
     role: UserDto.role;
+    channelId?: string;
     isBlocked: boolean;
 };
 

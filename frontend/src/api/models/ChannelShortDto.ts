@@ -5,14 +5,12 @@
 
 import type { UserDto } from './UserDto';
 
-export type ChannelDto = {
+export type ChannelShortDto = {
     id: string;
     name: string;
-    description: string;
     createdAt: string;
     isBlocked: boolean;
     owner: UserDto;
     subscribersCount: number;
-    videosCount: number;
     blocked?: boolean;
 };

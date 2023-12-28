@@ -12,6 +12,7 @@ import { useEffect } from 'react';
 import { useStore } from '@nanostores/react';
 import { token } from './stores/security';
 import { OpenAPI } from './api';
+import { Channel } from './pages/channel';
 
 function App() {
   
@@ -28,23 +29,15 @@ function App() {
     }
   )
 
-  const tokenVal = useStore(token)
-  
-  useEffect(() => {
-      if (tokenVal.data) {
-        OpenAPI.TOKEN = tokenVal.data
-      }
-  }, [])
-
   return (
   <ThemeProvider theme={theme}>
     <Routes>
-    
       <Route path='/' element={<Layout />}>
         <Route index element={<Home />} />
         <Route path='/reset-password/*' element={<ResetPassword/>}/>
         <Route path='/settings' element={<Settings/>} />
         <Route path='/error' element={<ErrorPage/>} />
+        <Route path='/channel/*' element={<Channel/>} />
         {/* Using path="*"" means "match anything", so this route
               acts like a catch-all for URLs that we don't have explicit
               routes for. */}

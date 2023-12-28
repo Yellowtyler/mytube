@@ -1,0 +1,79 @@
+.background-container {
+    position: relative;
+    width: 100%;
+}
+
+.profile-container {
+    position: relative;
+    width: 30%;
+}
+
+.image {
+    display: block;
+    width: 90%;
+    height: auto;
+    border-radius: 50%;
+}
+
+.background {
+    height: 200px;
+    width: 100%;
+    margin-bottom: 1rem;
+    margin-top: 1rem;
+}
+
+.box {
+    justify-content: center;
+    align-items: center;
+    display: flex;
+}
+
+.overlay-profile {
+    position: absolute;
+    bottom: 0;
+    background: rgb(0, 0, 0);
+    background: rgba(0, 0, 0, 0.5); /* Black see-through */
+    color: #f1f1f1;
+    width: 80%;
+    height: 84%;
+    transition: .5s ease;
+    opacity:0;
+    color: white;
+    font-size: 20px;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    border-radius: 16px;
+    align-items: center;
+    justify-content: center;
+    display: flex;
+}
+
+.overlay-background {
+    position: absolute;
+    bottom: 0;
+    background: rgb(0, 0, 0);
+    background: rgba(0, 0, 0, 0.5); /* Black see-through */
+    color: #f1f1f1;
+    width: 96%;
+    height: 83%;
+    transition: .5s ease;
+    opacity:0;
+    color: white;
+    font-size: 20px;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    border-radius: 16px;
+    align-items: center;
+    justify-content: center;
+    display: flex;
+}
+
+.profile-container:hover .overlay-profile{
+    opacity: 1;
+}
+
+.background-container:hover .overlay-background{
+    opacity: 1;
+}

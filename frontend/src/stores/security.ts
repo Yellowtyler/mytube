@@ -9,18 +9,19 @@ export const openAuthTab = () => {
   error.set(null)
   openAuth.set(true)
 }
+
 export const closeAuthTab = () => openAuth.set(false)
 
 let data = persistentAtom<string | null>('token', null, {
     decode: (value): string | null => {
-        try {
+      try {
             let tokenData = JSON.parse(value)
             if (typeof tokenData === 'string') {
                 return tokenData
             }
             return null
         } catch (e) {
-            logout()
+            removeToken()
             return null
         }
     },
@@ -59,12 +60,12 @@ export let auth = action(
 
     try {
       let { token: tokenValue } = await AuthApiImplService.login(req)
-
       if (tokenValue) {
         addToken(tokenValue)
       } else {
-        throw new Error('UNKNOWN_ERROR')
+        throw new Error('TOKEN_NOT_FOUND')
       }
+
     } catch (error_) {
       createError(error_)
       return
@@ -79,11 +80,10 @@ export let auth = action(
 
 export let logout = action(data, 'logout', async (store): Promise<void> => {
   let authorization = 'Bearer ' + store.get()
-  console.log(authorization)
   removeToken()
 
   if (authorization) {
-    await AuthApiImplService.logout(authorization)
+      await AuthApiImplService.logout(authorization)
   }
 
 })
@@ -94,17 +94,19 @@ export const createError = (error_: any) => {
           message: string
           code: ErrorCode
         }
-      }
-
-      if (!errorResponseValue.body) {
-        errorResponseValue.body = {message: "Service is unavailable", code: ErrorCode.SERVICE_ERROR}
-      } 
-      
-      error.set({
-          message: errorResponseValue.body?.message,
-          code: errorResponseValue.body?.code ?? ErrorCode.UNKNOWN_ERROR        
-      })
-      console.log(error)
+    }
+    
+    if (!token.get().data && error_.message !== 'Failed to fetch') {
+        errorResponseValue.body = {message: error_.message, code: ErrorCode.TOKEN_NOT_FOUND}
+    }
+    else if (!errorResponseValue.body) {
+      errorResponseValue.body = {message: "Service is unavailable", code: ErrorCode.SERVICE_ERROR}
+    } 
+    
+    error.set({
+        message: errorResponseValue.body?.message,
+        code: errorResponseValue.body?.code ?? ErrorCode.UNKNOWN_ERROR        
+    })
 }
 
 export const clearError = () => error.set(null)

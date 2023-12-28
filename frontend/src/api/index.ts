@@ -10,6 +10,7 @@ export type { OpenAPIConfig } from './core/OpenAPI';
 export type { BlockChannelRequest } from './models/BlockChannelRequest';
 export type { ChangePasswordRequest } from './models/ChangePasswordRequest';
 export type { ChannelDto } from './models/ChannelDto';
+export type { ChannelShortDto } from './models/ChannelShortDto';
 export type { EditChannelRequest } from './models/EditChannelRequest';
 export type { EditUserRequest } from './models/EditUserRequest';
 export type { ForgotPasswordRequest } from './models/ForgotPasswordRequest';

@@ -3,10 +3,10 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ChannelDto } from './ChannelDto';
+import type { ChannelShortDto } from './ChannelShortDto';
 
 export type GetChannelsResponse = {
-    list: Array<ChannelDto>;
+    list: Array<ChannelShortDto>;
     totalPages: number;
     currentPage: number;
     totalItems: number;

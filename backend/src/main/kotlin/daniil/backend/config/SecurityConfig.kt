@@ -47,7 +47,7 @@ class SecurityConfig (
                 authorize(HttpMethod.POST, "/api/auth/logout", authenticated)
                 authorize(HttpMethod.POST, "/api/video/**", authenticated)
                 authorize(HttpMethod.POST, "/api/channel/**", authenticated)
-                authorize(HttpMethod.PUT, "/api/channel/**", authenticated)
+                authorize(HttpMethod.PUT, "/api/channel", authenticated)
                 authorize(HttpMethod.DELETE, "/api/channel/**", hasRole("MODERATOR"))
                 authorize(HttpMethod.GET, "/api/channel/**", permitAll)
                 authorize(HttpMethod.GET, "/api/channel/**", permitAll)
@@ -76,7 +76,10 @@ class SecurityConfig (
     fun corsConfigurer(): WebMvcConfigurer {
        return object: WebMvcConfigurer {
             override fun addCorsMappings(registry: CorsRegistry) {
-                registry.addMapping("/**").allowedOrigins(clientProperty.url)
+                registry
+                    .addMapping("/**")
+                    .allowedOrigins(clientProperty.url)
+                    .allowedMethods("POST", "GET", "PUT", "HEAD", "DELETE", "PATCH")
             }
         }
     }

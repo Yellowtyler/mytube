@@ -37,7 +37,10 @@ class UserServiceImpl(
 
     override fun getUserByToken(auth: Authentication): UserDto {
         val user = userRepository.findByName(auth.name) ?: throwUserNotFound(auth.name)
-        return userMapper.toDto(user)
+        val dto = userMapper.toDto(user)
+        val channel = user.ownChannel!!
+        dto.channelId = channel.id
+        return dto
     }
 
     override fun getUsers(req: GetUsersRequest, auth: Authentication): GetUsersResponse {

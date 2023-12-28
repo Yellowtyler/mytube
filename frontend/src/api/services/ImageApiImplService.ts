@@ -16,13 +16,18 @@ export class ImageApiImplService {
      */
     public static uploadPhoto(
 type: string,
-formData?: FormData,
+requestBody?: {
+image: Blob;
+},
 ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/api/image/upload/profile',
-            formData: formData,
-            mediaType: 'multipart/form-data',
+            url: '/api/image/upload/{type}',
+            path: {
+                'type': type,
+            },
+            body: requestBody,
+            mediaType: 'application/json',
         });
     }
 
@@ -33,14 +38,13 @@ formData?: FormData,
      */
     public static getImage(
 type: string,
-): CancelablePromise<File> {
+): CancelablePromise<string> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/image/{type}',
             path: {
                 'type': type,
             },
-            
         });
     }
 
