@@ -1,15 +1,14 @@
-package daniil.backend.api
+package daniil.backend.service
 
 import daniil.backend.dto.video.*
-import org.springframework.http.ResponseEntity
 import org.springframework.security.core.Authentication
 import org.springframework.web.multipart.MultipartFile
-import java.util.UUID
+import java.util.*
 
-interface VideoApi {
-    fun uploadVideo(channelId: UUID, name: String, video: MultipartFile): ResponseEntity<UploadVideoResponse>
-    fun getVideo(id: UUID): ResponseEntity<VideoDto>
-    fun getVideos(req: GetVideosRequest, authentication: Authentication): ResponseEntity<List<VideoDto>>
+interface VideoService {
+    fun uploadVideo(channelId: UUID, name: String, video: MultipartFile, authentication: Authentication): UploadVideoResponse
+    fun getVideo(id: UUID): VideoDto
+    fun getVideos(req: GetVideosRequest, authentication: Authentication): List<VideoDto>
     fun editVideo(req: EditVideoRequest, authentication: Authentication)
     fun blockVideo(id: UUID, authentication: Authentication)
     fun deleteVideo(id: UUID, authentication: Authentication)

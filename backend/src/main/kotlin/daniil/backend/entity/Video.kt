@@ -34,10 +34,10 @@ class Video(
     var description: String,
 
     @OneToMany(fetch = FetchType.LAZY)
-    val comments: Set<Comment>,
+    val comments: Set<Comment> = mutableSetOf(),
 
     @OneToMany(fetch = FetchType.LAZY)
-    val likes: Set<Like>
+    val likes: Set<Like> = mutableSetOf()
 
 ) {
     override fun equals(other: Any?): Boolean {
