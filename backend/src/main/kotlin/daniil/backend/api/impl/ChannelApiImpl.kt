@@ -33,16 +33,14 @@ class ChannelApiImpl(
         channelService.subscribe(req, auth)
     }
 
-    @ResponseStatus(HttpStatus.OK)
     @PutMapping
-    override fun editChannel(@RequestBody req: EditChannelRequest, auth: Authentication) {
-        channelService.editChannel(req, auth)
+    override fun editChannel(@RequestBody req: EditChannelRequest, auth: Authentication): ResponseEntity<ChannelDto> {
+        return ResponseEntity.ok(channelService.editChannel(req, auth))
     }
 
-    @ResponseStatus(HttpStatus.OK)
     @PostMapping("/block")
-    override fun blockChannel(@RequestBody req: BlockChannelRequest, auth: Authentication) {
-        channelService.blockChannel(req, auth)
+    override fun blockChannel(@RequestBody req: BlockChannelRequest, auth: Authentication): ResponseEntity<ChannelDto> {
+        return ResponseEntity.ok(channelService.blockChannel(req, auth))
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)

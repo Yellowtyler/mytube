@@ -82,18 +82,21 @@ class ChannelServiceImpl(
     override fun subscribe(req: SubscribeChannelRequest, auth: Authentication) {
         val user = userRepository.findByName(auth.name) ?: throwUserNotFound(auth.name)
         val channel = channelRepository.findById(req.channelId).orElseThrow { throwChannelNotFound(req.channelId) }
+        if (user == channel.owner) {
+            throw Exception("user ${auth.name} can't subscribe to their own channel")
+        }
         val subscribers = channel.subscribers
         subscribers.add(user)
         channelRepository.save(channel)
     }
 
-    override fun blockChannel(req: BlockChannelRequest, auth: Authentication) {
+    override fun blockChannel(req: BlockChannelRequest, auth: Authentication): ChannelDto {
         val role = getRole(auth)
         if (role != UserRole.MODERATOR)
             throw UserHasNoPermissionException("user ${auth.name} doesn't have permission to this resource")
         val channel = channelRepository.findById(req.channelId).orElseThrow { throwChannelNotFound(req.channelId) }
         channel.isBlocked = true
-        channelRepository.save(channel)
+        return channelMapper.toDto(channelRepository.save(channel))
     }
 
     override fun deleteChannel(id: UUID, auth: Authentication) {
@@ -104,7 +107,7 @@ class ChannelServiceImpl(
         channelRepository.delete(channel)
     }
 
-    override fun editChannel(req: EditChannelRequest, auth: Authentication) {
+    override fun editChannel(req: EditChannelRequest, auth: Authentication): ChannelDto {
         val user = userRepository.findByName(auth.name) ?: throwUserNotFound(auth.name)
         val channel = channelRepository.findById(req.id).orElseThrow { throwChannelNotFound(req.id) }
         if (channel.owner != user) {
@@ -112,10 +115,10 @@ class ChannelServiceImpl(
         }
         channel.name = req.name
         channel.description = req.description
-        channelRepository.save(channel)
+        return channelMapper.toDto(channelRepository.save(channel))
     }
 
-    override fun uploadPhoto(type: String, userId: UUID, file: MultipartFile, auth: Authentication) {
+    override fun uploadPhoto(type: String, userId: UUID, file: MultipartFile, auth: Authentication): ChannelDto {
         val user = userRepository.findById(userId).orElseThrow { throwUserNotFound(userId) }
         if (user.id != userId) {
             throw UserHasNoPermissionException("user ${auth.name} can't edit other users' images")
@@ -142,14 +145,11 @@ class ChannelServiceImpl(
             channel.profilePhoto = fileName
         else
             channel.backgroundPhoto = fileName
-        channelRepository.save(channel)
+        return channelMapper.toDto(channelRepository.save(channel))
     }
 
     override fun getPhoto(type: String, userId: UUID, auth: Authentication): ByteArray {
         val user = userRepository.findById(userId).orElseThrow { throwUserNotFound(userId) }
-        if (user.id != userId) {
-            throw UserHasNoPermissionException("user ${auth.name} can't edit other users' images")
-        }
         val channel = user.ownChannel!!
 
         val fileName = if (type == "profile") {

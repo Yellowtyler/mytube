@@ -9,7 +9,7 @@ interface ChannelApi {
     fun getChannel(id: UUID, auth: Authentication): ResponseEntity<ChannelDto>
     fun getChannels(req: GetChannelsRequest, auth: Authentication): ResponseEntity<GetChannelsResponse>
     fun subscribe(req: SubscribeChannelRequest, auth: Authentication)
-    fun editChannel(req: EditChannelRequest, auth: Authentication)
-    fun blockChannel(req: BlockChannelRequest, auth: Authentication)
+    fun editChannel(req: EditChannelRequest, auth: Authentication): ResponseEntity<ChannelDto>
+    fun blockChannel(req: BlockChannelRequest, auth: Authentication): ResponseEntity<ChannelDto>
     fun deleteChannel(id: UUID, auth: Authentication)
 }

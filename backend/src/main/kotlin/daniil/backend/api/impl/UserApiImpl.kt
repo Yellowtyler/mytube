@@ -7,13 +7,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpHeaders
-import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
 import java.util.*
 
-@CrossOrigin(origins = ["\${client.url}"])
 @RestController
 @RequestMapping("api/user")
 class UserApiImpl(
@@ -95,17 +93,15 @@ class UserApiImpl(
                 description = "User doesn't have permission to resource")
         ]
     )
-    @ResponseStatus(HttpStatus.OK)
     @PatchMapping("/block/{userId}")
-    override fun blockUser(@PathVariable userId: UUID, auth: Authentication) {
-        userService.blockUser(userId, auth)
+    override fun blockUser(@PathVariable userId: UUID, auth: Authentication): ResponseEntity<UserDto> {
+        return ResponseEntity.ok(userService.blockUser(userId, auth))
     }
 
 
-    @ResponseStatus(HttpStatus.OK)
     @PutMapping
-    override fun editUser(@RequestBody req: EditUserRequest, auth: Authentication) {
-        userService.editUser(req, auth)
+    override fun editUser(@RequestBody req: EditUserRequest, auth: Authentication): ResponseEntity<UserDto> {
+        return ResponseEntity.ok(userService.editUser(req, auth))
     }
 
     @ApiResponses(
@@ -123,9 +119,8 @@ class UserApiImpl(
                 description = "User doesn't have permission to resource")
         ]
     )
-    @ResponseStatus(HttpStatus.OK)
     @PatchMapping("/role")
-    override fun updateRole(@RequestBody req: UpdateRoleRequest, auth: Authentication) {
-        userService.updateRole(req, auth)
+    override fun updateRole(@RequestBody req: UpdateRoleRequest, auth: Authentication): ResponseEntity<UserDto> {
+        return ResponseEntity.ok(userService.updateRole(req, auth))
     }
 }

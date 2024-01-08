@@ -4,6 +4,7 @@ import daniil.backend.enums.UserRole
 import daniil.backend.exception.ChannelNotFoundException
 import daniil.backend.exception.TokenNotFoundException
 import daniil.backend.exception.UserNotFoundException
+import daniil.backend.exception.VideoNotFoundException
 import org.springframework.security.core.Authentication
 import java.util.UUID
 
@@ -25,6 +26,10 @@ fun throwTokenNotFound(token: String): Nothing {
 
 fun throwChannelNotFound(id: UUID): Nothing {
     throw ChannelNotFoundException("channel with id $id not found")
+}
+
+fun throwVideoNotFound(id: UUID): Nothing {
+    throw VideoNotFoundException("video with id $id not found")
 }
 
 fun getRole(auth: Authentication): UserRole {

@@ -34,6 +34,7 @@ jwt:
     - /auth/reset-password
     - /auth/forgot-password
     - /auth/confirm-registration
+    - /api/video/views
     - /swagger-ui
     - /v3/api-docs
     - /favicon.ico

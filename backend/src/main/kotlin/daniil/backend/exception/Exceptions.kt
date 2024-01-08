@@ -19,6 +19,14 @@ class ChannelNotFoundException(override val message: String): NotFoundException(
     errorCode = ErrorCode.CHANNEL_NOT_FOUND, message = message
 )
 
+class VideoNotFoundException(override val message: String): NotFoundException(
+    errorCode = ErrorCode.VIDEO_NOT_FOUND, message = message
+)
+
+class LikeNotFoundException(override val message: String): NotFoundException(
+    errorCode = ErrorCode.LIKE_NOT_FOUND, message = message
+)
+
 class UserAlreadyExistsException(override val message: String) : AbstractException(
     errorCode = ErrorCode.USER_ALREADY_EXISTS, message = message
 )
@@ -49,4 +57,12 @@ class UserNotRegisteredException(override val message: String): AbstractExceptio
 
 class UserBlockedException(override val message: String): AbstractException(
     errorCode = ErrorCode.BLOCKED_USER, message = message
+)
+
+class VideoIsHiddenException(override val message: String): AbstractException(
+    errorCode = ErrorCode.VIDEO_IS_HIDDEN, message = message
+)
+
+class VideoIsBlockedException(override val message: String): AbstractException(
+    errorCode = ErrorCode.VIDEO_IS_BLOCKED, message = message
 )

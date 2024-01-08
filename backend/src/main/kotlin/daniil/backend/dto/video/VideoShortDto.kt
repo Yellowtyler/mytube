@@ -1,10 +1,9 @@
 package daniil.backend.dto.video
 
-import daniil.backend.dto.comment.CommentDto
 import java.time.OffsetDateTime
 import java.util.*
 
-data class VideoDto(
+data class VideoShortDto(
     val id: UUID,
 
     val name: String,
@@ -14,16 +13,6 @@ data class VideoDto(
     val isBlocked: Boolean,
 
     val isHidden: Boolean,
-
-    val videoPath: String,
-
-    val comments: List<CommentDto>,
-
-    var likesCount: Int,
-
-    var isLike: Boolean?,
-
-    var dislikesCount: Int,
 
     val createdAt: OffsetDateTime
 )

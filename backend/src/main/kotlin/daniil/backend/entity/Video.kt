@@ -1,11 +1,7 @@
 package daniil.backend.entity
 
-import jakarta.persistence.Column
-import jakarta.persistence.Entity
-import jakarta.persistence.FetchType
-import jakarta.persistence.Id
-import jakarta.persistence.OneToMany
-import jakarta.persistence.Table
+import jakarta.persistence.*
+import java.time.OffsetDateTime
 import java.util.UUID
 
 @Entity
@@ -33,11 +29,18 @@ class Video(
     @Column
     var description: String,
 
+    @Column
+    var createdAt: OffsetDateTime,
+
     @OneToMany(fetch = FetchType.LAZY)
     val comments: Set<Comment> = mutableSetOf(),
 
     @OneToMany(fetch = FetchType.LAZY)
-    val likes: Set<Like> = mutableSetOf()
+    val likes: Set<Like> = mutableSetOf(),
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "channel_id")
+    val channel: Channel
 
 ) {
     override fun equals(other: Any?): Boolean {

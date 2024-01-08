@@ -27,6 +27,9 @@ class JwtFilter(
     @Autowired private val jwtProperty: JwtProperty
 ): OncePerRequestFilter() {
 
+    private val GET_PATH_IGNORE_LIST = listOf("/api/video", "/api/channel", "/api/image")
+
+
     private val log = KotlinLogging.logger { }
 
     override fun doFilterInternal(
@@ -39,6 +42,11 @@ class JwtFilter(
         }
 
         if (jwtProperty.ignorePath.stream().noneMatch { s -> request.requestURI.contains(s) } && request.method != HttpMethod.OPTIONS.name()) {
+            if (request.method == HttpMethod.GET.name() && GET_PATH_IGNORE_LIST.any { request.requestURI.startsWith(it) }
+                && request.getHeader("Authorization").isNullOrEmpty()) {
+                filterChain.doFilter(request, response)
+            }
+
             log.debug{
                 "doFilterInternal() - validating token..."
             }

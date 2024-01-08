@@ -25,7 +25,6 @@ class UserServiceImpl(
 ): UserService, UserDetailsService {
 
 
-
     override fun getUser(id: UUID, auth: Authentication): UserDto {
         val role = getRole(auth)
         if (UserRole.ADMIN != role) {
@@ -61,27 +60,27 @@ class UserServiceImpl(
         )
     }
 
-    override fun blockUser(userId: UUID, auth: Authentication) {
+    override fun blockUser(userId: UUID, auth: Authentication): UserDto {
         val role = getRole(auth)
         if (UserRole.ADMIN != role) {
             throw UserHasNoPermissionException("user ${auth.name} doesn't have permission")
         }
         val user = userRepository.findById(userId).orElseThrow { throwUserNotFound(userId) }
         user.isBlocked = !user.isBlocked
-        userRepository.save(user)
+        return userMapper.toDto(userRepository.save(user))
     }
 
-    override fun updateRole(req: UpdateRoleRequest, auth: Authentication) {
+    override fun updateRole(req: UpdateRoleRequest, auth: Authentication): UserDto {
         val role = getRole(auth)
         if (UserRole.ADMIN != role) {
             throw UserHasNoPermissionException("user ${auth.name} doesn't have permission")
         }
         val user = userRepository.findById(req.userId).orElseThrow { throwUserNotFound(req.userId) }
         user.role = req.role
-        userRepository.save(user)
+        return userMapper.toDto(userRepository.save(user))
     }
 
-    override fun editUser(req: EditUserRequest, auth: Authentication) {
+    override fun editUser(req: EditUserRequest, auth: Authentication): UserDto {
         val user = userRepository.findByName(auth.name) ?: throwUserNotFound(auth.name)
         if (user.id != req.userId) {
             throw UserHasNoPermissionException("user ${auth.name} doesn't have permission to edit other users!")
@@ -98,7 +97,7 @@ class UserServiceImpl(
         user.name = req.name
         user.mail = req.mail
 
-        userRepository.save(user)
+        return userMapper.toDto(userRepository.save(user))
     }
 
     override fun loadUserByUsername(username: String): UserDetails {

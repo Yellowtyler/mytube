@@ -9,10 +9,10 @@ import java.util.UUID
 class Like(
     @Id
     @GeneratedValue
-    var id: UUID?,
+    var id: UUID? = null,
 
     @Column
-    val isLike: Boolean,
+    var isLike: Boolean,
 
     @Column
     val createdAt: OffsetDateTime,

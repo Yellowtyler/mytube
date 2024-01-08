@@ -9,7 +9,7 @@ interface UserApi {
     fun getUser(id: UUID, auth: Authentication): ResponseEntity<UserDto>
     fun getUserByToken(header: String, auth: Authentication): ResponseEntity<UserDto>
     fun getUsers(req: GetUsersRequest, auth: Authentication): ResponseEntity<GetUsersResponse>
-    fun blockUser(userId: UUID, auth: Authentication)
-    fun editUser(req: EditUserRequest, auth: Authentication)
-    fun updateRole(req: UpdateRoleRequest, auth: Authentication)
+    fun blockUser(userId: UUID, auth: Authentication): ResponseEntity<UserDto>
+    fun editUser(req: EditUserRequest, auth: Authentication): ResponseEntity<UserDto>
+    fun updateRole(req: UpdateRoleRequest, auth: Authentication): ResponseEntity<UserDto>
 }
