@@ -27,7 +27,6 @@ export const ErrorSnackbar: FC = () => {
     }, [errVal])
 
     return (
-        <div>
         <Snackbar
             open={open}
             autoHideDuration={6000}
@@ -36,6 +35,5 @@ export const ErrorSnackbar: FC = () => {
             action={action}
             color='primary'
         /> 
-        </div>
     )
 }

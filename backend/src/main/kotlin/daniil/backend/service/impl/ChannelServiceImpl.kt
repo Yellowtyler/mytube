@@ -5,7 +5,9 @@ import daniil.backend.entity.Channel
 import daniil.backend.entity.User
 import daniil.backend.enums.UserRole
 import daniil.backend.exception.UserHasNoPermissionException
-import daniil.backend.extension.*
+import daniil.backend.extension.getRole
+import daniil.backend.extension.throwChannelNotFound
+import daniil.backend.extension.throwUserNotFound
 import daniil.backend.mapper.ChannelMapper
 import daniil.backend.repository.ChannelRepository
 import daniil.backend.repository.UserRepository
@@ -17,11 +19,6 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.jpa.domain.Specification
 import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Service
-import org.springframework.web.multipart.MultipartFile
-import java.nio.file.Files
-import java.nio.file.NoSuchFileException
-import java.nio.file.Path
-import java.nio.file.Paths
 import java.util.*
 import kotlin.math.abs
 
@@ -34,15 +31,15 @@ class ChannelServiceImpl(
 
     val logger = KotlinLogging.logger {  }
 
-    override fun getChannel(id: UUID, auth: Authentication): ChannelDto {
+    override fun getChannel(id: UUID): ChannelDto {
         val channel = channelRepository.findById(id).orElseThrow { throwChannelNotFound(id) }
         val dto = channelMapper.toDto(channel)
         dto.videosCount = channel.videos.size
         return dto
     }
 
-    override fun getChannels(req: GetChannelsRequest, auth: Authentication): GetChannelsResponse {
-        if (!auth.isAuthenticated) {
+    override fun getChannels(req: GetChannelsRequest, auth: Authentication?): GetChannelsResponse {
+        if (auth == null) {
             val pageRequest = PageRequest.of(req.page, req.size)
             val channels = channelRepository.findAll(pageRequest)
             return GetChannelsResponse(
@@ -118,61 +115,4 @@ class ChannelServiceImpl(
         return channelMapper.toDto(channelRepository.save(channel))
     }
 
-    override fun uploadPhoto(type: String, userId: UUID, file: MultipartFile, auth: Authentication): ChannelDto {
-        val user = userRepository.findById(userId).orElseThrow { throwUserNotFound(userId) }
-        if (user.id != userId) {
-            throw UserHasNoPermissionException("user ${auth.name} can't edit other users' images")
-        }
-        val dir = if (type == "profile") {
-            PROFILE_PHOTOS_DIR
-        } else {
-            BACKGROUND_DIR
-        }
-        val dirPath = Path.of(dir)
-        if (!Files.exists(dirPath))
-            Files.createDirectory(dirPath)
-
-        val splittedFileName = file.originalFilename!!.split(".")
-        if (splittedFileName.size != 2) {
-            throw Exception("file doesn't have type")
-        }
-        val fileName = splittedFileName[0] + UUID.randomUUID() + "." + splittedFileName[1]
-        val filePath = Paths.get(dir, fileName)
-        Files.write(filePath, file.bytes)
-
-           val channel = user.ownChannel!!
-        if (type == "profile")
-            channel.profilePhoto = fileName
-        else
-            channel.backgroundPhoto = fileName
-        return channelMapper.toDto(channelRepository.save(channel))
-    }
-
-    override fun getPhoto(type: String, userId: UUID, auth: Authentication): ByteArray {
-        val user = userRepository.findById(userId).orElseThrow { throwUserNotFound(userId) }
-        val channel = user.ownChannel!!
-
-        val fileName = if (type == "profile") {
-            channel.profilePhoto
-        } else {
-            channel.backgroundPhoto
-        }
-        val dir = if (type == "profile") {
-            PROFILE_PHOTOS_DIR
-        } else {
-            BACKGROUND_DIR
-        }
-
-        val dirPath = Path.of(dir)
-        if (!Files.exists(dirPath))
-            Files.createDirectory(dirPath)
-
-        return try {
-            val fileNamePath = Paths.get(dir, fileName)
-            Files.readAllBytes(fileNamePath)
-        } catch (e: NoSuchFileException) {
-            logger.warn { "getPhoto() - $fileName doesn't exist" }
-            ByteArray(0)
-        }
-    }
 }

@@ -2,6 +2,7 @@ import HomeIcon from '@mui/icons-material/Home';
 import AccountBoxIcon from '@mui/icons-material/AccountBox';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import SubscriptionsIcon from '@mui/icons-material/Subscriptions';
+import VideoCallIcon from '@mui/icons-material/VideoCall';
 import styles from './index.module.css'
 
 export const SidebarData = [
@@ -28,5 +29,11 @@ export const SidebarData = [
         path: '/subscriptions',
         icon: <SubscriptionsIcon/>,
         cName: styles.nav_text 
+    },
+    {
+        title: 'Upload video',
+        path: '/upload-video',
+        icon: <VideoCallIcon/>,
+        cName: styles.nav_text
     }
 ]

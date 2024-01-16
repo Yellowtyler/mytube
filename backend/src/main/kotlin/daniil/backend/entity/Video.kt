@@ -7,6 +7,8 @@ import java.util.UUID
 @Entity
 @Table(name = "video")
 class Video(
+
+    @GeneratedValue
     @Id
     @Column
     var id: UUID?,
@@ -28,6 +30,12 @@ class Video(
 
     @Column
     var description: String,
+
+    @Column
+    var posterPath: String,
+
+    @Column
+    var duration: Long? = null,
 
     @Column
     var createdAt: OffsetDateTime,

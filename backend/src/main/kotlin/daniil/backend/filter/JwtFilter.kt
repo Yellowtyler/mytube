@@ -45,6 +45,7 @@ class JwtFilter(
             if (request.method == HttpMethod.GET.name() && GET_PATH_IGNORE_LIST.any { request.requestURI.startsWith(it) }
                 && request.getHeader("Authorization").isNullOrEmpty()) {
                 filterChain.doFilter(request, response)
+                return
             }
 
             log.debug{
@@ -56,6 +57,7 @@ class JwtFilter(
                 val headerVals = authHeader!!.split(" ")
                 if (headerVals.size != 2) {
                     response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "auth header is wrong or absent")
+                    return
                 }
                 val authToken: String = headerVals[1]
 

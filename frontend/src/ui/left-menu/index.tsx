@@ -1,5 +1,5 @@
 
-import React, { FC } from 'react'
+import { FC } from 'react'
 import CloseIcon from '@mui/icons-material/Close';
 import { SidebarData } from './sidebarData';
 import { Link } from 'react-router-dom';

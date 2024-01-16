@@ -10,21 +10,24 @@ export class ImageApiImplService {
 
     /**
      * @param type 
+     * @param user 
      * @param requestBody 
      * @returns any OK
      * @throws ApiError
      */
     public static uploadPhoto(
 type: string,
+user: string,
 requestBody?: {
 image: Blob;
 },
 ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/api/image/upload/{type}',
-            path: {
+            url: '/api/image/upload',
+            query: {
                 'type': type,
+                'user': user,
             },
             body: requestBody,
             mediaType: 'application/json',
@@ -33,17 +36,20 @@ image: Blob;
 
     /**
      * @param type 
+     * @param user 
      * @returns string OK
      * @throws ApiError
      */
     public static getImage(
 type: string,
+user: string,
 ): CancelablePromise<string> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/image/{type}',
-            path: {
+            url: '/api/image',
+            query: {
                 'type': type,
+                'user': user,
             },
         });
     }

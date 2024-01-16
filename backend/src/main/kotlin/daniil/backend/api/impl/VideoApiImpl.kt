@@ -5,6 +5,7 @@ import daniil.backend.dto.video.*
 import daniil.backend.service.VideoService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
@@ -17,28 +18,29 @@ class VideoApiImpl(
    @Autowired private val videoService: VideoService
 ): VideoApi {
 
-    @PostMapping
+    @ResponseStatus(HttpStatus.OK)
+    @PostMapping(consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     override fun uploadVideo(
-        @RequestParam("channelId") channelId: UUID,
         @RequestParam("name") name: String,
-        @RequestParam("video") video: MultipartFile,
+        @RequestParam("poster") poster: String,
+        @RequestParam("video") file: MultipartFile,
         authentication: Authentication
-    ): ResponseEntity<UploadVideoResponse> {
-        return ResponseEntity.status(HttpStatus.CREATED).body(videoService.uploadVideo(channelId, name, video, authentication))
+    ) {
+        videoService.uploadVideo(name, poster, file, authentication)
     }
 
     @GetMapping("/info/{id}")
-    override fun getVideoInfo(@PathVariable id: UUID, authentication: Authentication): ResponseEntity<VideoDto> {
+    override fun getVideoInfo(@PathVariable id: UUID, authentication: Authentication?): ResponseEntity<VideoDto> {
         return ResponseEntity.ok(videoService.getVideoInfo(id, authentication))
     }
 
     @GetMapping("{videoId}")
-    override fun getVideo(@PathVariable videoId: UUID, authentication: Authentication): ByteArray {
+    override fun getVideo(@PathVariable videoId: UUID, authentication: Authentication?): ByteArray {
         return videoService.getVideo(videoId, authentication)
     }
 
     @GetMapping("/all")
-    override fun getVideos(req: GetVideosRequest, authentication: Authentication): ResponseEntity<List<VideoShortDto>> {
+    override fun getVideos(req: GetVideosRequest, authentication: Authentication?): ResponseEntity<List<VideoShortDto>> {
         return ResponseEntity.ok(videoService.getVideos(req, authentication))
     }
 

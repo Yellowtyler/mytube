@@ -17,13 +17,13 @@ class ChannelApiImpl(
 ): ChannelApi {
 
     @GetMapping("{id}")
-    override fun getChannel(@PathVariable id: UUID, auth: Authentication): ResponseEntity<ChannelDto> {
-        return ResponseEntity.ok(channelService.getChannel(id, auth))
+    override fun getChannel(@PathVariable id: UUID): ResponseEntity<ChannelDto> {
+        return ResponseEntity.ok(channelService.getChannel(id))
     }
 
 
     @GetMapping("/all")
-    override fun getChannels(@RequestBody req: GetChannelsRequest, auth: Authentication): ResponseEntity<GetChannelsResponse> {
+    override fun getChannels(@RequestBody req: GetChannelsRequest, auth: Authentication?): ResponseEntity<GetChannelsResponse> {
         return ResponseEntity.ok(channelService.getChannels(req, auth))
     }
 

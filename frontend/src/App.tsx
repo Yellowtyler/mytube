@@ -8,11 +8,8 @@ import { createTheme } from '@mui/material';
 import ResetPassword from './pages/reset-password';
 import { Settings } from './pages/settings';
 import { ErrorPage } from './pages/error-page';
-import { useEffect } from 'react';
-import { useStore } from '@nanostores/react';
-import { token } from './stores/security';
-import { OpenAPI } from './api';
 import { Channel } from './pages/channel';
+import { UploadVideo } from './pages/upload-video';
 
 function App() {
   
@@ -38,6 +35,7 @@ function App() {
         <Route path='/settings' element={<Settings/>} />
         <Route path='/error' element={<ErrorPage/>} />
         <Route path='/channel/*' element={<Channel/>} />
+        <Route path='/upload-video' element={<UploadVideo/>}/>
         {/* Using path="*"" means "match anything", so this route
               acts like a catch-all for URLs that we don't have explicit
               routes for. */}

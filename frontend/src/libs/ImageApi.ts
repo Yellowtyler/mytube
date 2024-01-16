@@ -13,5 +13,5 @@ export const uploadImage = (type: string, userId: string, file: File) => {
 }
 
 export const getImage = (type: string, userId: string) => {
-    return axios.get(IMAGE_API_URL + `?type=${type}&user=${userId}`, {headers: {'Authorization': 'Bearer ' + token.get().data}, responseType: 'blob' })
+    return axios.get(IMAGE_API_URL + `?type=${type}&user=${userId}`, { responseType: 'blob' })
 } 

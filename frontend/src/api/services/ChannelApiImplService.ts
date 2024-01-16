@@ -17,12 +17,12 @@ export class ChannelApiImplService {
 
     /**
      * @param requestBody 
-     * @returns any OK
+     * @returns ChannelDto OK
      * @throws ApiError
      */
     public static editChannel(
 requestBody: EditChannelRequest,
-): CancelablePromise<any> {
+): CancelablePromise<ChannelDto> {
         return __request(OpenAPI, {
             method: 'PUT',
             url: '/api/channel',
@@ -49,12 +49,12 @@ requestBody: SubscribeChannelRequest,
 
     /**
      * @param requestBody 
-     * @returns any OK
+     * @returns ChannelDto OK
      * @throws ApiError
      */
     public static blockChannel(
 requestBody: BlockChannelRequest,
-): CancelablePromise<any> {
+): CancelablePromise<ChannelDto> {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/api/channel/block',

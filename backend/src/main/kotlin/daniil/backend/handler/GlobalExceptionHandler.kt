@@ -10,6 +10,7 @@ import org.springframework.validation.FieldError
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
+import java.util.*
 import java.util.stream.Collectors
 
 @ControllerAdvice
@@ -89,6 +90,18 @@ class GlobalExceptionHandler {
     @ExceptionHandler(Exception::class)
     fun handleException(e: Exception): ResponseEntity<ErrorResponse> {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body(ErrorResponse(ErrorCode.SERVICE_ERROR, "Service Error"))
+            .body(ErrorResponse(ErrorCode.SERVICE_ERROR, Optional.ofNullable(e.message).orElse("Internal Service Error")))
+    }
+
+    @ExceptionHandler(VideoIsHiddenException::class)
+    fun handleVideoIsHiddenException(e: VideoIsHiddenException): ResponseEntity<ErrorResponse> {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+            .body(ErrorResponse(e.errorCode, e.message))
+    }
+
+    @ExceptionHandler(VideoIsBlockedException::class)
+    fun handleVideoIsBlockedException(e: VideoIsBlockedException): ResponseEntity<ErrorResponse> {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+            .body(ErrorResponse(e.errorCode, e.message))
     }
 }

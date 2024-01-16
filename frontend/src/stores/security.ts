@@ -1,7 +1,8 @@
 import { persistentAtom } from "@nanostores/persistent";
 import { action, atom, computed } from "nanostores";
-import { AuthApiImplService, LoginRequest, OpenAPI } from "../api";
+import { ApiError, AuthApiImplService, LoginRequest, OpenAPI } from "../api";
 import { ErrorCode, ErrorResponse } from "../api/models/ErrorResponse";
+import { AxiosError } from "axios";
 
 export let openAuth = atom<boolean>(false)
 
@@ -95,13 +96,23 @@ export const createError = (error_: any) => {
           code: ErrorCode
         }
     }
-    
+    console.log(error_ as AxiosError);
     if (!token.get().data && error_.message !== 'Failed to fetch') {
         errorResponseValue.body = {message: error_.message, code: ErrorCode.TOKEN_NOT_FOUND}
     }
-    else if (!errorResponseValue.body) {
-      errorResponseValue.body = {message: "Service is unavailable", code: ErrorCode.SERVICE_ERROR}
-    } 
+    else if (error_ instanceof ApiError) {
+        errorResponseValue.body = {message: error_.body.message, code: error_.body.code}
+    }  
+    else if (error_ instanceof AxiosError) {
+        if (error_.message === 'Network Error') {
+            errorResponseValue.body = {message: "Maximum upload size exceeded (100 MB)", code: ErrorCode.SERVICE_ERROR}
+        } else {
+            errorResponseValue.body = {message: error_.response?.data.message, code: error_.response?.data.code}
+        }
+    }
+    else {
+        errorResponseValue.body = {message: "Service is unavailable", code: ErrorCode.SERVICE_ERROR}
+    }
     
     error.set({
         message: errorResponseValue.body?.message,

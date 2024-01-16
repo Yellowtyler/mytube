@@ -37,7 +37,14 @@ class Logger {
                 else -> it
             }
         }
-        return mappedArgs.map { it.toString() }
+        return mappedArgs.map {
+            if (it != null) {
+                it.toString()
+            }
+            else {
+                ""
+            }
+        }
     }
 
 }

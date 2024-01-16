@@ -1,8 +1,8 @@
 import { FC, useEffect, useRef, useState } from 'react'
-import { ChannelApiImplService, ChannelDto, EditChannelRequest, OpenAPI } from '../../api'
+import { ChannelApiImplService, ChannelDto, EditChannelRequest, OpenAPI, UserDto } from '../../api'
 import { createError, error, token } from '../../stores/security'
 import { useStore } from '@nanostores/react'
-import { currentUser, loading } from '../../stores/current-user'
+import { fetchUser} from '../../stores/current-user'
 import { Button, Divider, Stack, TextField, Typography } from '@mui/material'
 import { getImage, uploadImage } from '../../libs/ImageApi'
 import image from '../../icons/mytube.png'
@@ -15,8 +15,7 @@ import DoneIcon from '@mui/icons-material/Done';
 
 export const Channel: FC = () => {
     
-    const currUser = useStore(currentUser)
-    const load = useStore(loading)
+    const [currUser, setCurrUser] = useState<UserDto | null>(null)
     const tokenVal = useStore(token)
     const errorVal = useStore(error)
 
@@ -26,41 +25,52 @@ export const Channel: FC = () => {
     const [isOwnChannel, setIsOwnChannel] = useState<boolean>(false)
     const [editChannelReq, setEditChannelReq] = useState<EditChannelRequest>({id: '', name: '', description: ''})
     const [edit, setEdit] = useState<boolean>(false)
+    const [isSubscribeDisabled, setIsSubscribeDisabled] = useState<boolean>(false)
 
     const hiddenProfileInput = useRef<HTMLInputElement>(null)
     const hiddenBackgroundInput = useRef<HTMLInputElement>(null)
 
     useEffect(() => {
-        if (!load) {
-            OpenAPI.TOKEN = tokenVal!.data!  
-            let id = window.location.pathname.split('/').pop();
-            ChannelApiImplService.getChannel(id!)
-            .then(r => {
-                setChannel(r)
-                if (r.id === currUser?.channelId!) {
-                    setIsOwnChannel(false)
-                    setEditChannelReq({id: r.id, name: r.name, description: r.description})
-                }
+        OpenAPI.TOKEN = tokenVal!.data!  
+        let user = fetchUser()
+        if (!user) {
+            fetchChannelData()
+        } else {
+            user.then(r => {
+                setCurrUser(r)
+                fetchChannelData()
             })
             .catch(e => createError(e))
-
-            getImage('profile', currUser!.id).then(r => {
-                const data = r.data as Blob
-                let newVal = data.size === 0 ? image : URL.createObjectURL(data)  
-                setProfilePhoto(newVal)
-            })
-            .catch(e => createError(e))
-
-            getImage('background', currUser!.id).then(r => {
-                const data = r.data as Blob
-                let newVal = data.size === 0 ? background : URL.createObjectURL(data)  
-                setBackgroundPhoto(newVal)
-            })
-            .catch(e => createError(e))
- 
         }
-   }, [load])
+        
+    }, [])
     
+    const fetchChannelData = () => {
+        let id = window.location.pathname.split('/').pop();
+        ChannelApiImplService.getChannel(id!)
+                .then(r => {
+                    setChannel(r)
+                    if (currUser && r.id === currUser?.channelId!) {
+                        setIsOwnChannel(true)
+                        setEditChannelReq({id: r.id, name: r.name, description: r.description})
+                    }
+                
+                    getImage('profile', r.owner.id).then(r => {
+                        const data = r.data as Blob
+                        let newVal = data.size === 0 ? image : URL.createObjectURL(data)  
+                        setProfilePhoto(newVal)
+                    })
+
+                    getImage('background', r.owner.id).then(r => {
+                        const data = r.data as Blob
+                        let newVal = data.size === 0 ? background : URL.createObjectURL(data)  
+                        setBackgroundPhoto(newVal)
+                    })
+                })
+                .catch(e => createError(e))
+
+    }
+
     const openProfilePhotoDialog = () => {
         hiddenProfileInput!.current!.click()
     }
@@ -94,6 +104,13 @@ export const Channel: FC = () => {
         .catch(e => createError(e))
     }
 
+    const subscribe = () => {
+        let req = {channelId: channel?.id!}
+        ChannelApiImplService.subscribe(req).then(r => {
+            setIsSubscribeDisabled(true)
+        })
+    }
+
     return (
 
         <div className={styles['box']}>
@@ -105,7 +122,7 @@ export const Channel: FC = () => {
                 </div>}
             </div>
             
-            <Stack direction={'row'} marginBottom={'1rem'}>
+            <Stack direction={'row'} marginBottom={'1rem'} width={'700px'}>
                 <div className={styles['profile-container']}>
                     <img className={styles['image']} src={profilePhoto}/>
                     {isOwnChannel && <div className={styles['overlay-profile']} onClick={openProfilePhotoDialog}>
@@ -160,7 +177,8 @@ export const Channel: FC = () => {
                     </Stack>
                     }
                     {!isOwnChannel && <Typography variant='body2'>{channel?.name}</Typography>}
-                    {!isOwnChannel && <Button variant='contained' style={{width: '50%'}}>Subscribe</Button>}
+                    {!isOwnChannel && tokenVal.data && <Button variant='contained' style={{width: '50%'}} disabled={isSubscribeDisabled} onClick={subscribe}>Subscribe</Button>}
+                    
                 </Stack>
             </Stack>
             <Divider/>

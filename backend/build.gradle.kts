@@ -43,7 +43,8 @@ dependencies {
 	runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.5")
 	implementation("org.mapstruct:mapstruct:1.6.0.Beta1")
 	kapt("org.mapstruct:mapstruct-processor:1.6.0.Beta1")
-
+	implementation("org.jboss.logging:jboss-logging:3.5.3.Final")
+	implementation("net.bramp.ffmpeg:ffmpeg:0.8.0")
 
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("io.projectreactor:reactor-test")

@@ -14,5 +14,7 @@ data class VideoShortDto(
 
     val isHidden: Boolean,
 
-    val createdAt: OffsetDateTime
+    val createdAt: OffsetDateTime,
+
+    val duration: Long
 )

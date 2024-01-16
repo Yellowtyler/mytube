@@ -10,6 +10,7 @@ import java.util.UUID
 
 val PROFILE_PHOTOS_DIR = System.getProperty("user.dir") + "/profile-photos"
 val BACKGROUND_DIR = System.getProperty("user.dir") + "/background"
+val POSTER_DIR = System.getProperty("user.dir") + "/posters"
 val VIDEOS_DIR = System.getProperty("user.dir") + "/videos"
 
 fun throwUserNotFound(arg: Any): Nothing {

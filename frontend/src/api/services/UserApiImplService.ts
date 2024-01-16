@@ -16,12 +16,12 @@ export class UserApiImplService {
 
     /**
      * @param requestBody 
-     * @returns any OK
+     * @returns UserDto OK
      * @throws ApiError
      */
     public static editUser(
 requestBody: EditUserRequest,
-): CancelablePromise<any> {
+): CancelablePromise<UserDto> {
         return __request(OpenAPI, {
             method: 'PUT',
             url: '/api/user',
@@ -32,12 +32,12 @@ requestBody: EditUserRequest,
 
     /**
      * @param requestBody 
-     * @returns any successfully updated user role
+     * @returns UserDto successfully updated user role
      * @throws ApiError
      */
     public static updateRole(
 requestBody: UpdateRoleRequest,
-): CancelablePromise<any> {
+): CancelablePromise<UserDto> {
         return __request(OpenAPI, {
             method: 'PATCH',
             url: '/api/user/role',
@@ -53,12 +53,12 @@ requestBody: UpdateRoleRequest,
 
     /**
      * @param userId 
-     * @returns any successfully blocked user
+     * @returns UserDto successfully blocked user
      * @throws ApiError
      */
     public static blockUser(
 userId: string,
-): CancelablePromise<any> {
+): CancelablePromise<UserDto> {
         return __request(OpenAPI, {
             method: 'PATCH',
             url: '/api/user/block/{userId}',

@@ -1,6 +1,6 @@
 import { atom, onMount } from "nanostores";
 import { UserApiImplService, UserDto} from "../api";
-import { createError, logout, removeToken, token } from "./security";
+import { createError, removeToken, token } from "./security";
 import { ErrorCode } from "../api/models/ErrorResponse";
 
 export const currentUser = atom<UserDto | null>(null)
@@ -11,7 +11,7 @@ export const addUser = (user: UserDto) => {
     currentUser.set(user)
 }
 
-export const fetchUser: () => Promise<void | UserDto> | null = () => {
+export const fetchUser: () => Promise<UserDto> | null = () => {
     let tokenData = token.get().data
     if (tokenData) {
         let headerVal = "Bearer " + tokenData 
@@ -19,7 +19,6 @@ export const fetchUser: () => Promise<void | UserDto> | null = () => {
             addUser(r)
             return r
         })
-        .catch(e => console.log(e))
     }
 
     return null

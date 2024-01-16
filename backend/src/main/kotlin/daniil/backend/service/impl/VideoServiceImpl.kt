@@ -8,7 +8,6 @@ import daniil.backend.exception.UserHasNoPermissionException
 import daniil.backend.exception.VideoIsBlockedException
 import daniil.backend.exception.VideoIsHiddenException
 import daniil.backend.extension.VIDEOS_DIR
-import daniil.backend.extension.throwChannelNotFound
 import daniil.backend.extension.throwUserNotFound
 import daniil.backend.extension.throwVideoNotFound
 import daniil.backend.mapper.VideoMapper
@@ -18,6 +17,7 @@ import daniil.backend.repository.UserRepository
 import daniil.backend.repository.VideoRepository
 import daniil.backend.service.VideoService
 import io.github.oshai.kotlinlogging.KotlinLogging
+import net.bramp.ffmpeg.FFprobe
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -31,6 +31,8 @@ import java.nio.file.Paths
 import java.time.OffsetDateTime
 import java.util.*
 import kotlin.io.path.exists
+import kotlin.io.path.pathString
+
 
 @Service
 class VideoServiceImpl(
@@ -43,11 +45,9 @@ class VideoServiceImpl(
 
     private val logger = KotlinLogging.logger {  }
 
-    override fun uploadVideo(channelId: UUID, name: String, video: MultipartFile, authentication: Authentication): UploadVideoResponse {
+    override fun uploadVideo(name: String, poster: String, video: MultipartFile, authentication: Authentication): UploadVideoResponse {
         val user = userRepository.findByName(authentication.name) ?: throwUserNotFound(authentication.name)
-        val channel = channelRepository.findById(channelId).orElseThrow {
-            throwChannelNotFound(channelId)
-        }
+        val channel = user.ownChannel!!
 
         if (user != channel.owner) {
             throw UserHasNoPermissionException("user ${authentication.name} doesn't have permission")
@@ -62,7 +62,8 @@ class VideoServiceImpl(
         val videoName = splitedVideoName[0] + UUID.randomUUID() + "." + splitedVideoName[1]
         val videoPath = Paths.get(VIDEOS_DIR, videoName)
         Files.write(videoPath, video.bytes)
-
+        val duration = getDuration(videoPath)
+        println(duration)
         val newVideo = Video(
             null,
             name,
@@ -72,7 +73,9 @@ class VideoServiceImpl(
             videoPath = videoName,
             description = "video description",
             createdAt = OffsetDateTime.now(),
-            channel = channel
+            channel = channel,
+            posterPath = poster,
+            duration = duration
         )
 
         val savedVideo = videoRepository.save(newVideo)
@@ -84,13 +87,21 @@ class VideoServiceImpl(
         return UploadVideoResponse(savedVideo.id!!, name, videoName)
     }
 
-    override fun getVideoInfo(videoId: UUID, authentication: Authentication): VideoDto {
+    private fun getDuration(videoPath: Path): Long {
+        val ffprobe = FFprobe()
+        val probeResult = ffprobe.probe(videoPath.pathString)
+
+        val format = probeResult.getFormat()
+        return format.duration.toLong()
+    }
+
+    override fun getVideoInfo(videoId: UUID, authentication: Authentication?): VideoDto {
         val video = videoRepository.findById(videoId)
            .orElseThrow {
                 throwVideoNotFound(videoId)
-            }
+           }
 
-        if (video.isHidden && !authentication.isAuthenticated) {
+        if (video.isHidden && authentication == null) {
             logger.error { "getVideoInfo() - video $videoId is hidden" }
             throw VideoIsHiddenException("video ${video.name} is hidden")
         }
@@ -101,7 +112,7 @@ class VideoServiceImpl(
         }
 
         var isLike: Boolean? = null
-        if (authentication.isAuthenticated) {
+        if (authentication != null) {
             val user = userRepository.findByName(authentication.name) ?: throwUserNotFound(authentication.name)
             if (video.isHidden && user.ownChannel != video.channel) {
                throw VideoIsHiddenException("video ${video.name} is hidden")
@@ -128,13 +139,21 @@ class VideoServiceImpl(
         return videoDto
     }
 
-    override fun getVideo(videoId: UUID, authentication: Authentication): ByteArray {
+    override fun getVideo(videoId: UUID, authentication: Authentication?): ByteArray {
         val video = videoRepository.findById(videoId).orElseThrow { throwVideoNotFound(videoId) }
 
-        if (video.isHidden && !authentication.isAuthenticated) {
-            logger.error { "getVideo() - video $videoId is hidden" }
-            throw VideoIsHiddenException("video ${video.name} is hidden")
-        }
+        if (video.isHidden) {
+            if (authentication != null) {
+                val user = userRepository.findByName(authentication.name) ?: throwUserNotFound(authentication.name)
+                if (user.ownChannel != video.channel) {
+                    logger.error { "getVideo() - video $videoId is hidden" }
+                    throw VideoIsHiddenException("video ${video.name} is hidden")
+                }
+            } else {
+                logger.error { "getVideo() - video $videoId is hidden" }
+                throw VideoIsHiddenException("video ${video.name} is hidden")
+            }
+       }
 
         if (video.isBlocked) {
             logger.error { "getVideo() - video $videoId has been blocked" }
@@ -154,17 +173,21 @@ class VideoServiceImpl(
         }
     }
 
-    override fun getVideos(req: GetVideosRequest, authentication: Authentication): List<VideoShortDto> {
+    override fun getVideos(req: GetVideosRequest, authentication: Authentication?): List<VideoShortDto> {
         val spec = createSpec(req)
         val pageRequest = PageRequest.of(req.page, req.size)
         var videos = videoRepository.findAll(spec, pageRequest)
 
-        val videosChannels = channelRepository.findAllByVideos_Id(videos.map { it.id!! }.toList())
-        val user = userRepository.findByName(authentication.name) ?: throwUserNotFound(authentication.name)
-        val userChannel = user.ownChannel
 
-        if (!authentication.isAuthenticated || !videosChannels.all { it == userChannel }) {
+        if (authentication == null) {
             videos = videos.filter { !it.isHidden } as Page<Video>
+        } else {
+            val user = userRepository.findByName(authentication.name) ?: throwUserNotFound(authentication.name)
+            val userChannel = user.ownChannel
+            val videosChannels = channelRepository.findAllByVideos_Id(videos.map { it.id!! }.toList())
+            if (!videosChannels.all { it == userChannel }) {
+                videos = videos.filter { !it.isHidden } as Page<Video>
+            }
         }
 
         videos = videos.filter { !it.isBlocked } as Page<Video>
