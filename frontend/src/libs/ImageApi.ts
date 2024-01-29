@@ -12,6 +12,13 @@ export const uploadImage = (type: string, userId: string, file: File) => {
     return axios.post(IMAGE_API_URL + `/upload`, formData, {headers: {'Authorization': 'Bearer ' + token.get().data}})
 }
 
-export const getImage = (type: string, userId: string) => {
-    return axios.get(IMAGE_API_URL + `?type=${type}&user=${userId}`, { responseType: 'blob' })
+export const getImage = (type: string, userId?: string, videoId?: string) => {
+    let query = `type=${type}`
+    if (userId) {
+        query += `&user=${userId}`
+    }
+    if (videoId) {
+        query += `&video=${videoId}`
+    }
+    return axios.get(IMAGE_API_URL + `?${query}`, { responseType: 'blob' })
 } 

@@ -60,12 +60,22 @@ class ImageServiceImpl(
         return UploadResponseDto(fileName)
     }
 
-    override fun getPhoto(type: PhotoType, userId: UUID, videoId: UUID?): ByteArray {
-        val user = userRepository.findById(userId).orElseThrow { throwUserNotFound(userId) }
-
+    override fun getPhoto(type: PhotoType, userId: UUID?, videoId: UUID?): ByteArray {
         val fileName =  when (type) {
-            PhotoType.PROFILE -> user.ownChannel!!.profilePhoto
-            PhotoType.BACKGROUND -> user.ownChannel!!.backgroundPhoto
+            PhotoType.PROFILE -> {
+                if (userId == null) {
+                    throw VideoNotFoundException("query param 'user' is absent")
+                }
+                val user = userRepository.findById(userId).orElseThrow { throwUserNotFound(userId) }
+                user.ownChannel!!.profilePhoto
+            }
+            PhotoType.BACKGROUND -> {
+                if (userId == null) {
+                    throw VideoNotFoundException("query param 'user' is absent")
+                }
+                val user = userRepository.findById(userId).orElseThrow { throwUserNotFound(userId) }
+                user.ownChannel!!.backgroundPhoto
+            }
             PhotoType.POSTER -> {
                 if (videoId == null) {
                     throw VideoNotFoundException("query param 'video' is absent")

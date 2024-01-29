@@ -6,5 +6,5 @@ import java.util.*
 
 interface ImageApi {
     fun uploadPhoto(type: String, userId: UUID, file: MultipartFile, auth: Authentication)
-    fun getImage(type: String, userId: UUID, videoId: UUID?): ByteArray
+    fun getImage(type: String, userId: UUID?, videoId: UUID?): ByteArray
 }

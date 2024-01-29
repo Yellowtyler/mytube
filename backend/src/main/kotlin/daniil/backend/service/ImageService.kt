@@ -8,5 +8,5 @@ import java.util.*
 
 interface ImageService {
     fun uploadPhoto(type: PhotoType, userId: UUID, file: MultipartFile, auth: Authentication): UploadResponseDto
-    fun getPhoto(type: PhotoType, userId: UUID, videoId: UUID?): ByteArray
+    fun getPhoto(type: PhotoType, userId: UUID?, videoId: UUID?): ByteArray
 }

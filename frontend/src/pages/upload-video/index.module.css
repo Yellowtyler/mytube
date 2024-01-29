@@ -6,14 +6,16 @@
 
 .profile-container {
     position: relative;
-    width: 40%;
+    width: 60%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .image {
     display: block;
     width: 90%;
     height: auto;
-    border-radius: 50%;
 }
 
 .overlay-profile {
@@ -31,7 +33,6 @@
     padding: 20px;
     text-align: center;
     cursor: pointer;
-    border-radius: 16px;
     align-items: center;
     justify-content: center;
     display: flex;

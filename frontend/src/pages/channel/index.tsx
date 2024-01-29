@@ -1,9 +1,9 @@
 import { FC, useEffect, useRef, useState } from 'react'
-import { ChannelApiImplService, ChannelDto, EditChannelRequest, OpenAPI, UserDto } from '../../api'
-import { createError, error, token } from '../../stores/security'
+import { ChannelApiImplService, ChannelDto, EditChannelRequest, OpenAPI, UserApiImplService, UserDto, VideoApiImplService, VideoShortDto } from '../../api'
+import { createError, error, removeToken, token } from '../../stores/security'
 import { useStore } from '@nanostores/react'
-import { fetchUser} from '../../stores/current-user'
-import { Button, Divider, Stack, TextField, Typography } from '@mui/material'
+import { addUser} from '../../stores/current-user'
+import { Button, Card, CardContent, CardMedia, Divider, Grid, Stack, TextField, Typography } from '@mui/material'
 import { getImage, uploadImage } from '../../libs/ImageApi'
 import image from '../../icons/mytube.png'
 import background from '../../icons/default_background.jpg'
@@ -12,6 +12,9 @@ import AddAPhotoIcon from '@mui/icons-material/AddAPhoto';
 import EditIcon from '@mui/icons-material/Edit';
 import { ErrorSnackbar } from '../../ui/error-snackbar'
 import DoneIcon from '@mui/icons-material/Done';
+import { getVideos } from '../../libs/VideoApi'
+import { ErrorCode } from '../../api/models/ErrorResponse'
+import { mapDate } from '../../libs/Date'
 
 export const Channel: FC = () => {
     
@@ -32,17 +35,25 @@ export const Channel: FC = () => {
 
     useEffect(() => {
         OpenAPI.TOKEN = tokenVal!.data!  
-        let user = fetchUser()
-        if (!user) {
-            fetchChannelData()
-        } else {
-            user.then(r => {
+        let tokenData = token.get().data
+        if (tokenData) {
+            let headerVal = "Bearer " + tokenData 
+            UserApiImplService.getUserByToken(headerVal).then(r => {
+                addUser(r)
                 setCurrUser(r)
                 fetchChannelData()
+                return r
             })
-            .catch(e => createError(e))
+           .catch(e => {
+                createError({body: {message: 'User is unauthorized', code: ErrorCode.EXPIRED_TOKEN}})
+                removeToken()
+            })
+
         }
-        
+    
+        else {
+            fetchChannelData() 
+        }
     }, [])
     
     const fetchChannelData = () => {
@@ -190,10 +201,96 @@ export const Channel: FC = () => {
   )
 }
 
-type Props = {}
 
-const Videos = (props: Props) => {
-  return (
-    <div>Videos</div>
-  )
+
+const Videos: FC = () => {
+
+    const [videos, setVideos] = useState<VideoShortDto[]>([])
+    const [page, setPage] = useState<number>(0)
+    const [isFetch, setIsFetch] = useState<boolean>(true) 
+    const [totalPages, setTotalPages] = useState<number>(0)
+
+    const size = 3;
+   
+    useEffect(() => {
+        if (!isFetch || (page !==0 && page === totalPages)) return
+
+        window.addEventListener('scroll', handleScroll)
+        
+        let id = window.location.pathname.split('/').pop();
+        let req = {channelId: id, page: page, size: size}
+        
+        getVideos(req)
+        .then(r => {
+            const prevVideos = videos
+            const newVideos: VideoShortDto[] = [...prevVideos, ...r.data.list]
+            newVideos.forEach((v) => {
+                v.createdAt = mapDate(v.createdAt)
+            })
+            setVideos(newVideos)
+            setIsFetch(false)
+            setPage(r.data.currentPage+1)
+            setTotalPages(r.data.totalPages)
+        })
+        .catch(e => createError(e))
+
+    }, [isFetch])
+
+    const handleScroll = () => {
+        if (window.innerHeight + document.documentElement.scrollTop !== document.documentElement.offsetHeight) return;
+        setIsFetch(true)
+    }
+
+    return (
+        <div>
+            <Grid container rowSpacing={1} columnSpacing={{ xs: 2, sm: 3, md: 4 }} marginTop={'1rem'} >
+                {videos.map((v, index) => {
+                    return (
+                        <Video video={v}/>
+                    )
+                })
+                }
+            </Grid>
+        </div>
+    )
+}
+
+type VideoProps = {
+    video: VideoShortDto 
+}
+
+const Video: FC<VideoProps> = (props: VideoProps) => {
+
+    const [poster, setPoster] = useState<any>()
+
+    useEffect(() => {
+        console.log(props.video.id)
+        getImage('poster', undefined, props.video.id)
+        .then(r => {
+            const data = r.data as Blob
+            let newVal = data.size === 0 ? image : URL.createObjectURL(data)  
+            setPoster(newVal)
+        })
+        .catch(e => createError(e))
+    },[])
+
+    return (
+         <Grid item xs={4} padding={'1rem'}>
+            <Card style={{padding:'0.5rem'}}>
+                <CardMedia
+                    sx={{ height: 140 }}
+                    image={poster}
+                    title={props.video.name}
+                />
+                <CardContent>
+                <Typography gutterBottom variant="h5" component="div">
+                    {props.video.name}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                   {props.video.views +" ‧ " + props.video.createdAt} 
+                </Typography>
+                </CardContent>
+        </Card>
+        </Grid>
+    )
 }

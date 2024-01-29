@@ -7,6 +7,7 @@ import daniil.backend.enums.UserRole
 import daniil.backend.exception.UserHasNoPermissionException
 import daniil.backend.exception.VideoIsBlockedException
 import daniil.backend.exception.VideoIsHiddenException
+import daniil.backend.extension.POSTER_DIR
 import daniil.backend.extension.VIDEOS_DIR
 import daniil.backend.extension.throwUserNotFound
 import daniil.backend.extension.throwVideoNotFound
@@ -18,18 +19,21 @@ import daniil.backend.repository.VideoRepository
 import daniil.backend.service.VideoService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import net.bramp.ffmpeg.FFprobe
+import org.bytedeco.javacv.FFmpegFrameGrabber
+import org.bytedeco.javacv.Java2DFrameConverter
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.jpa.domain.Specification
 import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
+import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.time.OffsetDateTime
 import java.util.*
+import javax.imageio.ImageIO
 import kotlin.io.path.exists
 import kotlin.io.path.pathString
 
@@ -62,8 +66,12 @@ class VideoServiceImpl(
         val videoName = splitedVideoName[0] + UUID.randomUUID() + "." + splitedVideoName[1]
         val videoPath = Paths.get(VIDEOS_DIR, videoName)
         Files.write(videoPath, video.bytes)
+
         val duration = getDuration(videoPath)
-        println(duration)
+        val videoPoster = poster.ifEmpty {
+            getFirstFrame(videoPath)
+        }
+
         val newVideo = Video(
             null,
             name,
@@ -74,7 +82,7 @@ class VideoServiceImpl(
             description = "video description",
             createdAt = OffsetDateTime.now(),
             channel = channel,
-            posterPath = poster,
+            posterPath = videoPoster,
             duration = duration
         )
 
@@ -86,6 +94,26 @@ class VideoServiceImpl(
 
         return UploadVideoResponse(savedVideo.id!!, name, videoName)
     }
+
+    private fun getFirstFrame(videoPath: Path): String {
+        val g = FFmpegFrameGrabber(videoPath.toFile())
+        g.start()
+        val converter = Java2DFrameConverter()
+        var posterName = ""
+        for (i in 0..50) {
+            if (i == 50) {
+                val frame = g.grabImage()
+                val bi = converter.convert(frame)
+                posterName = videoPath.fileName.toString() + UUID.randomUUID().toString() + ".png"
+                val posterPath = POSTER_DIR + "/" +  posterName
+                ImageIO.write(bi, "png", File(posterPath))
+            }
+        }
+
+        g.stop()
+        return posterName
+    }
+
 
     private fun getDuration(videoPath: Path): Long {
         val ffprobe = FFprobe()
@@ -173,26 +201,25 @@ class VideoServiceImpl(
         }
     }
 
-    override fun getVideos(req: GetVideosRequest, authentication: Authentication?): List<VideoShortDto> {
+    override fun getVideos(req: GetVideosRequest, authentication: Authentication?): GetVideosResponse {
         val spec = createSpec(req)
         val pageRequest = PageRequest.of(req.page, req.size)
-        var videos = videoRepository.findAll(spec, pageRequest)
+        val videosPage = videoRepository.findAll(spec, pageRequest)
 
-
-        if (authentication == null) {
-            videos = videos.filter { !it.isHidden } as Page<Video>
-        } else {
-            val user = userRepository.findByName(authentication.name) ?: throwUserNotFound(authentication.name)
-            val userChannel = user.ownChannel
-            val videosChannels = channelRepository.findAllByVideos_Id(videos.map { it.id!! }.toList())
-            if (!videosChannels.all { it == userChannel }) {
-                videos = videos.filter { !it.isHidden } as Page<Video>
+        val videos =
+            if (authentication == null) {
+                videosPage.filter { !it.isHidden }.toMutableList()
+            } else {
+                val user = userRepository.findByName(authentication.name) ?: throwUserNotFound(authentication.name)
+                val userChannel = user.ownChannel
+                val videosIds = videosPage.map { it.id!! }.toList()
+                val videosChannels = channelRepository.findAllByVideosId(videosIds)
+                if (!videosChannels.all { it == userChannel }) {
+                    videosPage.filter { !it.isHidden }.toMutableList()
+                }
+                videosPage.toMutableList()
             }
-        }
-
-        videos = videos.filter { !it.isBlocked } as Page<Video>
-
-        return videos
+            .filter { !it.isBlocked }
             .map {
                 videoMapper.toShortDto(it)
             }
@@ -200,6 +227,8 @@ class VideoServiceImpl(
                 it.createdAt
             }
             .toList()
+
+        return GetVideosResponse(videos, videosPage.totalPages, videosPage.number, videosPage.totalElements)
     }
 
     override fun editVideo(req: EditVideoRequest, authentication: Authentication): VideoDto {
@@ -264,7 +293,7 @@ class VideoServiceImpl(
                         video,
                         _,
                         criteriaBuilder ->
-                    criteriaBuilder.equal(video.join<Video, Channel>("owner").get<UUID>("id"), req.channelId)
+                    criteriaBuilder.equal(video.join<Video, Channel>("channel").get<UUID>("id"), req.channelId)
                 }
             }
 
@@ -274,7 +303,7 @@ class VideoServiceImpl(
                     video,
                     _,
                     criteriaBuilder ->
-                criteriaBuilder.equal(video.join<Video, Channel>("owner").get<UUID>("id"), req.channelId)
+                criteriaBuilder.equal(video.join<Video, Channel>("channel").get<UUID>("id"), req.channelId)
             }
         }
     }

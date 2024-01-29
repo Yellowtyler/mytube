@@ -40,7 +40,7 @@ class VideoApiImpl(
     }
 
     @GetMapping("/all")
-    override fun getVideos(req: GetVideosRequest, authentication: Authentication?): ResponseEntity<List<VideoShortDto>> {
+    override fun getVideos(req: GetVideosRequest, authentication: Authentication?): ResponseEntity<GetVideosResponse> {
         return ResponseEntity.ok(videoService.getVideos(req, authentication))
     }
 

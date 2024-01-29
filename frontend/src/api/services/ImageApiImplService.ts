@@ -37,12 +37,14 @@ image: Blob;
     /**
      * @param type 
      * @param user 
+     * @param video 
      * @returns string OK
      * @throws ApiError
      */
     public static getImage(
 type: string,
 user: string,
+video?: string,
 ): CancelablePromise<string> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -50,6 +52,7 @@ user: string,
             query: {
                 'type': type,
                 'user': user,
+                'video': video,
             },
         });
     }

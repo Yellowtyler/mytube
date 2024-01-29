@@ -14,6 +14,7 @@ export const addUser = (user: UserDto) => {
 export const fetchUser: () => Promise<UserDto> | null = () => {
     let tokenData = token.get().data
     if (tokenData) {
+   
         let headerVal = "Bearer " + tokenData 
         return UserApiImplService.getUserByToken(headerVal).then(r => {
             addUser(r)
@@ -30,6 +31,7 @@ onMount(currentUser, () => {
     if (loadingValue) {
         let tokenData = token.get().data
         if (tokenData) {
+            console.log('check')
             let headerVal = "Bearer " + tokenData 
             UserApiImplService.getUserByToken(headerVal).then(r => {
                 addUser(r)

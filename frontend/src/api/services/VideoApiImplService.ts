@@ -4,9 +4,8 @@
 /* eslint-disable */
 import type { EditVideoRequest } from '../models/EditVideoRequest';
 import type { GetVideosRequest } from '../models/GetVideosRequest';
-import type { UploadVideoResponse } from '../models/UploadVideoResponse';
+import type { GetVideosResponse } from '../models/GetVideosResponse';
 import type { VideoDto } from '../models/VideoDto';
-import type { VideoShortDto } from '../models/VideoShortDto';
 
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
@@ -31,28 +30,28 @@ requestBody: EditVideoRequest,
     }
 
     /**
-     * @param channelId 
      * @param name 
-     * @param requestBody 
-     * @returns UploadVideoResponse OK
+     * @param poster 
+     * @param formData 
+     * @returns any OK
      * @throws ApiError
      */
     public static uploadVideo(
-channelId: string,
 name: string,
-requestBody?: {
+poster: string,
+formData?: {
 video: Blob;
 },
-): CancelablePromise<UploadVideoResponse> {
+): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/api/video',
             query: {
-                'channelId': channelId,
                 'name': name,
+                'poster': poster,
             },
-            body: requestBody,
-            mediaType: 'application/json',
+            formData: formData,
+            mediaType: 'multipart/form-data',
         });
     }
 
@@ -126,12 +125,12 @@ id: string,
 
     /**
      * @param req 
-     * @returns VideoShortDto OK
+     * @returns GetVideosResponse OK
      * @throws ApiError
      */
     public static getVideos(
 req: GetVideosRequest,
-): CancelablePromise<Array<VideoShortDto>> {
+): CancelablePromise<GetVideosResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/video/all',

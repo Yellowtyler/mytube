@@ -10,4 +10,5 @@ export type VideoShortDto = {
     isBlocked: boolean;
     isHidden: boolean;
     createdAt: string;
+    duration: number;
 };

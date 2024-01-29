@@ -50,7 +50,7 @@ export let addToken = action(data, 'add', (store, tokenValue: string) => {
 })
   
 export let removeToken = action(data, 'remove', store => {
-  store.set(null)
+    store.set(null)
 })
   
 export let auth = action(
@@ -106,8 +106,10 @@ export const createError = (error_: any) => {
     else if (error_ instanceof AxiosError) {
         if (error_.message === 'Network Error') {
             errorResponseValue.body = {message: "Maximum upload size exceeded (100 MB)", code: ErrorCode.SERVICE_ERROR}
-        } else {
+        } else if (error_.response?.data.message) {
             errorResponseValue.body = {message: error_.response?.data.message, code: error_.response?.data.code}
+        } else {
+            errorResponseValue.body = {message: error_.message, code: ErrorCode.EXPIRED_TOKEN}
         }
     }
     else {
