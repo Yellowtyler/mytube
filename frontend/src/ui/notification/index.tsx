@@ -5,14 +5,15 @@ import CloseIcon from '@mui/icons-material/Close';
 type NotificationProps = {
     msg: String;
     open: boolean;
-    setOpen: (val: boolean) => void
+    setOpen: (val: boolean) => void;
+    func: Function;
 }
 
 export const Notification: FC<NotificationProps> = (props: NotificationProps) => {
 
     const closeNotification = () => {
         props.setOpen(false)
-        window.location.reload()
+        props.func()
     } 
 
     const action = (
@@ -35,7 +36,7 @@ export const Notification: FC<NotificationProps> = (props: NotificationProps) =>
             message={props.msg}
             onClose={closeNotification}
             action={action}
-            color='green'
+            color='inherit'
         /> 
     )
 }

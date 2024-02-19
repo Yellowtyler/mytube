@@ -1,5 +1,6 @@
 package daniil.backend.dto.video
 
+import daniil.backend.dto.channel.VideoOwnerDto
 import daniil.backend.dto.comment.CommentDto
 import java.time.OffsetDateTime
 import java.util.*
@@ -15,8 +16,6 @@ data class VideoDto(
 
     val isHidden: Boolean,
 
-    val videoPath: String,
-
     val comments: List<CommentDto>,
 
     var likesCount: Int,
@@ -25,5 +24,6 @@ data class VideoDto(
 
     var dislikesCount: Int,
 
-    val createdAt: OffsetDateTime
+    val createdAt: OffsetDateTime,
+    val channel: VideoOwnerDto
 )

@@ -33,6 +33,7 @@ export { UpdateRoleRequest } from './models/UpdateRoleRequest';
 export { UserDto } from './models/UserDto';
 export { UserShortDto } from './models/UserShortDto';
 export type { VideoDto } from './models/VideoDto';
+export type { VideoOwnerDto } from './models/VideoOwnerDto';
 export type { VideoShortDto } from './models/VideoShortDto';
 
 export { AuthApiImplService } from './services/AuthApiImplService';

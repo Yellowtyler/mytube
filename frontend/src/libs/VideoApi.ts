@@ -30,7 +30,6 @@ export const getVideos = (req: GetVideosRequest) => {
 
     let headers
     if (token.get().data) {
-        console.log(1)
         headers = {headers: {'Authorization': 'Bearer ' + token.get().data}}
     }
 

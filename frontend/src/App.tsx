@@ -10,6 +10,7 @@ import { Settings } from './pages/settings';
 import { ErrorPage } from './pages/error-page';
 import { Channel } from './pages/channel';
 import { UploadVideo } from './pages/upload-video';
+import { Video } from './pages/video';
 
 function App() {
   
@@ -36,6 +37,7 @@ function App() {
         <Route path='/error' element={<ErrorPage/>} />
         <Route path='/channel/*' element={<Channel/>} />
         <Route path='/upload-video' element={<UploadVideo/>}/>
+        <Route path='/video/*' element={<Video/>}/>
         {/* Using path="*"" means "match anything", so this route
               acts like a catch-all for URLs that we don't have explicit
               routes for. */}

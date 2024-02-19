@@ -164,6 +164,7 @@ class VideoServiceImpl(
         videoDto.isLike = isLike
         videoDto.dislikesCount = dislikesCount
         videoDto.likesCount = likesCount
+        videoDto.channel.subscribersCount = video.channel.subscribers.size
         return videoDto
     }
 

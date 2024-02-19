@@ -43,7 +43,7 @@ image: Blob;
      */
     public static getImage(
 type: string,
-user: string,
+user?: string,
 video?: string,
 ): CancelablePromise<string> {
         return __request(OpenAPI, {

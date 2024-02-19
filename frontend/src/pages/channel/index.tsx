@@ -1,8 +1,8 @@
 import { FC, useEffect, useRef, useState } from 'react'
-import { ChannelApiImplService, ChannelDto, EditChannelRequest, OpenAPI, UserApiImplService, UserDto, VideoApiImplService, VideoShortDto } from '../../api'
-import { createError, error, removeToken, token } from '../../stores/security'
+import { ChannelApiImplService, ChannelDto, EditChannelRequest, OpenAPI, VideoShortDto } from '../../api'
+import { createError, error, token } from '../../stores/security'
 import { useStore } from '@nanostores/react'
-import { addUser} from '../../stores/current-user'
+import { currentUser, fetchUserAndOtherData} from '../../stores/current-user'
 import { Button, Card, CardContent, CardMedia, Divider, Grid, Stack, TextField, Typography } from '@mui/material'
 import { getImage, uploadImage } from '../../libs/ImageApi'
 import image from '../../icons/mytube.png'
@@ -13,12 +13,12 @@ import EditIcon from '@mui/icons-material/Edit';
 import { ErrorSnackbar } from '../../ui/error-snackbar'
 import DoneIcon from '@mui/icons-material/Done';
 import { getVideos } from '../../libs/VideoApi'
-import { ErrorCode } from '../../api/models/ErrorResponse'
 import { mapDate } from '../../libs/Date'
+import { useNavigate } from 'react-router-dom'
 
 export const Channel: FC = () => {
     
-    const [currUser, setCurrUser] = useState<UserDto | null>(null)
+    const currUser = useStore(currentUser)
     const tokenVal = useStore(token)
     const errorVal = useStore(error)
 
@@ -35,31 +35,14 @@ export const Channel: FC = () => {
 
     useEffect(() => {
         OpenAPI.TOKEN = tokenVal!.data!  
-        let tokenData = token.get().data
-        if (tokenData) {
-            let headerVal = "Bearer " + tokenData 
-            UserApiImplService.getUserByToken(headerVal).then(r => {
-                addUser(r)
-                setCurrUser(r)
-                fetchChannelData()
-                return r
-            })
-           .catch(e => {
-                createError({body: {message: 'User is unauthorized', code: ErrorCode.EXPIRED_TOKEN}})
-                removeToken()
-            })
-
-        }
-    
-        else {
-            fetchChannelData() 
-        }
+        fetchUserAndOtherData(fetchChannelData);
     }, [])
     
     const fetchChannelData = () => {
         let id = window.location.pathname.split('/').pop();
         ChannelApiImplService.getChannel(id!)
                 .then(r => {
+
                     setChannel(r)
                     if (currUser && r.id === currUser?.channelId!) {
                         setIsOwnChannel(true)
@@ -206,14 +189,14 @@ export const Channel: FC = () => {
 const Videos: FC = () => {
 
     const [videos, setVideos] = useState<VideoShortDto[]>([])
-    const [page, setPage] = useState<number>(0)
+    const [page, setPage] = useState<number>(1)
     const [isFetch, setIsFetch] = useState<boolean>(true) 
     const [totalPages, setTotalPages] = useState<number>(0)
 
     const size = 3;
    
     useEffect(() => {
-        if (!isFetch || (page !==0 && page === totalPages)) return
+        if (!isFetch || (page !== 0 && page === totalPages)) return
 
         window.addEventListener('scroll', handleScroll)
         
@@ -229,8 +212,9 @@ const Videos: FC = () => {
             })
             setVideos(newVideos)
             setIsFetch(false)
-            setPage(r.data.currentPage+1)
+            setPage(page+1)
             setTotalPages(r.data.totalPages)
+            console.log(page)
         })
         .catch(e => createError(e))
 
@@ -262,9 +246,9 @@ type VideoProps = {
 const Video: FC<VideoProps> = (props: VideoProps) => {
 
     const [poster, setPoster] = useState<any>()
+    const navigate = useNavigate()
 
     useEffect(() => {
-        console.log(props.video.id)
         getImage('poster', undefined, props.video.id)
         .then(r => {
             const data = r.data as Blob
@@ -276,7 +260,7 @@ const Video: FC<VideoProps> = (props: VideoProps) => {
 
     return (
          <Grid item xs={4} padding={'1rem'}>
-            <Card style={{padding:'0.5rem'}}>
+            <Card style={{padding:'0.5rem', cursor: 'pointer'}} onClick={(e: any) => navigate('/video/' + props.video.id)}>
                 <CardMedia
                     sx={{ height: 140 }}
                     image={poster}

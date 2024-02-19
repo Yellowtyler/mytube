@@ -26,12 +26,32 @@ export const fetchUser: () => Promise<UserDto> | null = () => {
 
 };
 
+export const fetchUserAndOtherData = (func: Function) => {
+    let tokenData = token.get().data
+    if (tokenData && !currentUser) {
+    let headerVal = "Bearer " + tokenData 
+        UserApiImplService.getUserByToken(headerVal).then(r => {
+            addUser(r)
+            func()
+            return r
+        })
+        .catch(e => {
+            createError({body: {message: 'User is unauthorized', code: ErrorCode.EXPIRED_TOKEN}})
+            removeToken()
+        })
+    }
+
+    else {
+        func() 
+    }
+
+}
+
 onMount(currentUser, () => {
     let loadingValue = loading.get()
     if (loadingValue) {
         let tokenData = token.get().data
         if (tokenData) {
-            console.log('check')
             let headerVal = "Bearer " + tokenData 
             UserApiImplService.getUserByToken(headerVal).then(r => {
                 addUser(r)

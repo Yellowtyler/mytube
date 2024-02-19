@@ -1,9 +1,10 @@
-import { FC, useRef, useState } from 'react'
+import { FC, useEffect, useRef, useState } from 'react'
 import styles from './index.module.css'
 import { Button, LinearProgress, Stack, TextField, Typography} from '@mui/material'
 import { uploadVideo } from '../../libs/VideoApi'
 import { createError } from '../../stores/security'
 import AddAPhotoIcon from '@mui/icons-material/AddAPhoto';
+import VideoCallIcon from '@mui/icons-material/VideoCall';
 import { uploadImage } from '../../libs/ImageApi'
 import { useStore } from '@nanostores/react'
 import { currentUser } from '../../stores/current-user'
@@ -22,8 +23,9 @@ export const UploadVideo: FC = () => {
     const [progress, setProgress] = useState<number>(0)
     const [loading, setLoading] = useState<boolean>(false)
     const [uploaded, setUploaded] = useState<boolean>(false)
-    const hiddenInput = useRef<HTMLInputElement>(null)
-
+    const hiddenPosterInput = useRef<HTMLInputElement>(null)
+    const hiddenVideoInput = useRef<HTMLInputElement>(null)
+   
     const handleUploadVideo = (event: any) => {
         const file = event.target.files[0]
         setCurrVideo(file)
@@ -43,9 +45,23 @@ export const UploadVideo: FC = () => {
     }
     
     const saveUploadedVideo = () => {
+        let errMsg = ''
+        if (title === '') {
+            errMsg += "Title is empty. "
+        }
+
+        if (currVideo === undefined) {
+            errMsg += "Video is not uploaded."
+        }
+
+        if (errMsg !== '') {
+            createError(errMsg)
+            return
+        }
+
         uploadVideo(title, poster, currVideo)
-        .then(r => setUploaded(true))
-        .catch(e => createError(e))
+            .then(r => setUploaded(true))
+            .catch(e => createError(e))
     }
 
     const handleUploadImage = (event: any, type: string) => { 
@@ -75,32 +91,47 @@ export const UploadVideo: FC = () => {
                     value={title}
                     onChange={(e: any) => setTitle(e.target.value)}  
                 />
-                <div className={styles['profile-container']}>
+                <div style={{cursor: 'pointer'}} onClick={() => hiddenPosterInput.current?.click()}>
                    {!currPoster && 
-                    <Stack justifyContent={'center'} alignItems={'center'} spacing={4} padding={'1rem'} width={'500px'}
-                        style={{backgroundColor: 'whitesmoke', borderRadius: '10%'}}>
+                    <Stack justifyContent={'center'} alignItems={'center'} spacing={4} padding={'1rem'}
+                        style={{backgroundColor: 'whitesmoke', borderRadius: '10%', cursor: 'pointer'}}>
                         <AddAPhotoIcon fontSize='large'/>
-                        <Typography>(Optional) Upload video poster here</Typography>
+                        <Typography fontSize={14}>(Optional) Upload video poster here</Typography>
                     </Stack>
-                   }
-
-                   {currPoster && <img className={styles['image']} src={currPoster}/>}
-                    <div className={styles['overlay-profile']} onClick={() => hiddenInput.current?.click()}>
-                        <AddAPhotoIcon fontSize='large'/>
-                    </div> 
-                    <input
-                        ref={hiddenInput} 
+                    }
+                     <input
+                        ref={hiddenPosterInput} 
                         type='file'
                         accept='image/*'
                         style={{display:'none'}}
                         onChange={(e: any) =>handleUploadImage(e, 'poster')}
                     />
                 </div>
-                <input
-                    type='file'
-                    accept='video/*'
-                    onChange={handleUploadVideo}
-                />
+
+                <div className={styles['profile-container']}>
+                   {currPoster && <img className={styles['image']} src={currPoster}/>}
+                    <div className={styles['overlay-profile']} onClick={() => hiddenPosterInput.current?.click()}>
+                        <AddAPhotoIcon fontSize='large'/>
+                    </div> 
+               </div>
+                
+                <div style={{cursor: 'pointer'}} onClick={() => hiddenVideoInput.current?.click()}>
+                    <input
+                        ref={hiddenVideoInput}
+                        style={{display:'none'}}
+                        type='file'
+                        accept='video/*'
+                        onChange={handleUploadVideo}
+                    />
+                    {!currVideo &&
+                        <Stack justifyContent={'center'} alignItems={'center'} spacing={4} padding={'1rem'}
+                            style={{backgroundColor: 'whitesmoke', borderRadius: '10%'}}>
+                            <VideoCallIcon fontSize='large'/>
+                            <Typography fontSize={14}>Upload video here</Typography>
+                        </Stack>
+                    }
+                </div>
+
                 {loading && <LinearProgress variant='determinate' value={progress}/>}
                 {video && 
                     <video controls src={video} id='preupload'>
@@ -108,7 +139,7 @@ export const UploadVideo: FC = () => {
                 }
                 <Button variant='contained' disabled={uploaded} onClick={saveUploadedVideo}>Upload</Button> 
             </Stack>
-            <Notification open={uploaded} setOpen={setUploaded} msg={'Video has been successfully uploaded!'}/>
+            <Notification open={uploaded} setOpen={setUploaded} msg={'Video has been successfully uploaded!'} func={() => window.location.reload()}/>
         </div>
     )
 }

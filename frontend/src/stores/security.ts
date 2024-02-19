@@ -75,7 +75,6 @@ export let auth = action(
     }
 
     error.set(null)
-    closeAuthTab()
   }
 )
 
@@ -90,35 +89,40 @@ export let logout = action(data, 'logout', async (store): Promise<void> => {
 })
 
 export const createError = (error_: any) => {
-    let errorResponseValue = error_ as {
-        body?: {
+    let errorResponseValue = {} as {
           message: string
           code: ErrorCode
         }
+
+    if (typeof error_ === 'string') {
+         errorResponseValue= {message: error_, code: ErrorCode.VALIDATION_ERROR}
     }
-    console.log(error_ as AxiosError);
-    if (!token.get().data && error_.message !== 'Failed to fetch') {
-        errorResponseValue.body = {message: error_.message, code: ErrorCode.TOKEN_NOT_FOUND}
+
+    else if (!token.get().data && error_.message !== 'Failed to fetch') {
+        errorResponseValue= {message: error_.message, code: ErrorCode.TOKEN_NOT_FOUND}
     }
+
     else if (error_ instanceof ApiError) {
-        errorResponseValue.body = {message: error_.body.message, code: error_.body.code}
-    }  
+        errorResponseValue= {message: error_.body.message, code: error_.body.code}
+    }
+
     else if (error_ instanceof AxiosError) {
         if (error_.message === 'Network Error') {
-            errorResponseValue.body = {message: "Maximum upload size exceeded (100 MB)", code: ErrorCode.SERVICE_ERROR}
+            errorResponseValue= {message: "Maximum upload size exceeded (100 MB)", code: ErrorCode.SERVICE_ERROR}
         } else if (error_.response?.data.message) {
-            errorResponseValue.body = {message: error_.response?.data.message, code: error_.response?.data.code}
+            errorResponseValue= {message: error_.response?.data.message, code: error_.response?.data.code}
         } else {
-            errorResponseValue.body = {message: error_.message, code: ErrorCode.EXPIRED_TOKEN}
+            errorResponseValue= {message: error_.message, code: ErrorCode.EXPIRED_TOKEN}
         }
     }
+
     else {
-        errorResponseValue.body = {message: "Service is unavailable", code: ErrorCode.SERVICE_ERROR}
+        errorResponseValue= {message: "Service is unavailable", code: ErrorCode.SERVICE_ERROR}
     }
     
     error.set({
-        message: errorResponseValue.body?.message,
-        code: errorResponseValue.body?.code ?? ErrorCode.UNKNOWN_ERROR        
+        message: errorResponseValue.message,
+        code: errorResponseValue.code ?? ErrorCode.UNKNOWN_ERROR        
     })
 }
 

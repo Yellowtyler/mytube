@@ -6,6 +6,7 @@ import ErrorAlert from "../../ui/error-alert";
 import { AuthApiImplService, RegisterRequest } from "../../api";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import { useNavigate } from "react-router-dom";
+import { Notification } from "../../ui/notification";
 
 export type AuthProps = {
     value: number;
@@ -46,14 +47,19 @@ export const Auth: FC = () => {
 }
 
 const Login: FC<AuthProps> = (props: AuthProps) => {
+
     const [name, setName] = useState<string>('')
     const [password, setPassword] = useState<string>('')
     const [forgot, setForgot] = useState<boolean>(false)
+    const [open, setOpen] = useState<boolean>(false)
+ 
     const navigate = useNavigate()
-    
+
     const login = () => {
         let req = {name: name, password: password}
-        auth(req).then(r=>navigate('/'))
+        auth(req).then(r=> {
+            setOpen(true)
+        })
     }
 
     return (
@@ -90,6 +96,7 @@ const Login: FC<AuthProps> = (props: AuthProps) => {
                 <Button onClick={login}>Login</Button>
                 <Button onClick={closeAuthTab}>Cancel</Button>
             </DialogActions>
+            <Notification open={open} setOpen={setOpen} msg="Successfully logged in" func={() => {navigate('/'); closeAuthTab();}}/>
             </div>
             : <ForgotPassword setForgot={setForgot}/>
             }

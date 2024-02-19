@@ -3,6 +3,7 @@ package daniil.backend.service.impl
 import daniil.backend.dto.image.UploadResponseDto
 import daniil.backend.enums.PhotoType
 import daniil.backend.exception.UserHasNoPermissionException
+import daniil.backend.exception.UserNotFoundException
 import daniil.backend.exception.VideoNotFoundException
 import daniil.backend.extension.*
 import daniil.backend.repository.UserRepository
@@ -64,14 +65,14 @@ class ImageServiceImpl(
         val fileName =  when (type) {
             PhotoType.PROFILE -> {
                 if (userId == null) {
-                    throw VideoNotFoundException("query param 'user' is absent")
+                    throw UserNotFoundException("query param 'user' is absent")
                 }
                 val user = userRepository.findById(userId).orElseThrow { throwUserNotFound(userId) }
                 user.ownChannel!!.profilePhoto
             }
             PhotoType.BACKGROUND -> {
                 if (userId == null) {
-                    throw VideoNotFoundException("query param 'user' is absent")
+                    throw UserNotFoundException("query param 'user' is absent")
                 }
                 val user = userRepository.findById(userId).orElseThrow { throwUserNotFound(userId) }
                 user.ownChannel!!.backgroundPhoto

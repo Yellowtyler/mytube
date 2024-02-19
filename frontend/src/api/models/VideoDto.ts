@@ -4,6 +4,7 @@
 /* eslint-disable */
 
 import type { CommentDto } from './CommentDto';
+import type { VideoOwnerDto } from './VideoOwnerDto';
 
 export type VideoDto = {
     id: string;
@@ -11,11 +12,11 @@ export type VideoDto = {
     views: number;
     isBlocked: boolean;
     isHidden: boolean;
-    videoPath: string;
     comments: Array<CommentDto>;
     likesCount: number;
     isLike?: boolean;
     dislikesCount: number;
     createdAt: string;
+    channel: VideoOwnerDto;
     like?: boolean;
 };
