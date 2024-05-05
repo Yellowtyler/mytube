@@ -40,7 +40,7 @@ class AuthServiceImpl(
         if (req.password.length < 8)
             throw BadPasswordException("password must contain more than 7 characters")
         if (userRepository.existsByNameOrMail(req.name, req.mail)) {
-            val msg = "user with $req.name or $req.mail already exists!"
+            val msg = "user with ${req.name} or ${req.mail} already exists!"
             logger.error { "register() - $msg" }
             throw UserAlreadyExistsException(msg)
         }

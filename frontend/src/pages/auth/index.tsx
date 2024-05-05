@@ -1,21 +1,28 @@
 import { FC, useState } from "react";
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormLabel, Tab, Tabs, TextField } from "@mui/material";
 import { useStore } from "@nanostores/react";
-import { auth, clearError, closeAuthTab, createError, error, openAuth } from "../../stores/security";
+import { auth, clearError, createError, error } from "../../stores/security";
 import ErrorAlert from "../../ui/error-alert";
 import { AuthApiImplService, RegisterRequest } from "../../api";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import { useNavigate } from "react-router-dom";
 import { Notification } from "../../ui/notification";
 
+
 export type AuthProps = {
+    open: boolean;
+    setOpen: (val: boolean) => void;
+}
+
+export type TabProps = {
     value: number;
     index: number;
+    closeAuthTab: () => void;
+    openAuthTab: () => void;
 };
 
-export const Auth: FC = () => {
+export const Auth: FC<AuthProps> = (props: AuthProps) => {
     
-    let open = useStore(openAuth)
     const errorVal = useStore(error)
 
     const [value, setValue] = useState<number>(0);
@@ -23,7 +30,11 @@ export const Auth: FC = () => {
     const handleChange = (event: React.SyntheticEvent, newValue: number) => {
       setValue(newValue);
     };
-    
+
+    const closeAuthTab = () => props.setOpen(false)
+    const openAuthTab = () => props.setOpen(true)
+
+
     function switchTab(index: number) {
         return {
           id: `simple-tab-${index}`,
@@ -32,21 +43,21 @@ export const Auth: FC = () => {
     }
 
     return (
-        <Dialog open={open} onClose={closeAuthTab}>
+        <Dialog open={props.open} onClose={closeAuthTab}>
             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                 <Tabs value={value} onChange={handleChange} aria-label="basic tabs example">
                     <Tab label="Login" {...switchTab(0)}/>
                     <Tab label="Register"  {...switchTab(1)}/>
                 </Tabs>
             </Box>
-            <Login index={0} value={value} />
-            <Register index={1} value={value} />
+            <Login index={0} value={value} closeAuthTab={closeAuthTab} openAuthTab={openAuthTab} />
+            <Register index={1} value={value} closeAuthTab={closeAuthTab} openAuthTab={openAuthTab}/>
            {errorVal && <ErrorAlert/>}
         </Dialog>
     ) 
 }
 
-const Login: FC<AuthProps> = (props: AuthProps) => {
+const Login: FC<TabProps> = (props: TabProps) => {
 
     const [name, setName] = useState<string>('')
     const [password, setPassword] = useState<string>('')
@@ -60,6 +71,7 @@ const Login: FC<AuthProps> = (props: AuthProps) => {
         auth(req).then(r=> {
             setOpen(true)
         })
+        .catch(e=>props.openAuthTab())
     }
 
     return (
@@ -94,11 +106,11 @@ const Login: FC<AuthProps> = (props: AuthProps) => {
             </DialogContent>
             <DialogActions>
                 <Button onClick={login}>Login</Button>
-                <Button onClick={closeAuthTab}>Cancel</Button>
+                <Button onClick={props.closeAuthTab}>Cancel</Button>
             </DialogActions>
-            <Notification open={open} setOpen={setOpen} msg="Successfully logged in" func={() => {navigate('/'); closeAuthTab();}}/>
+            <Notification open={open} setOpen={setOpen} msg="Successfully logged in" func={() => {navigate('/'); props.closeAuthTab();}}/>
             </div>
-            : <ForgotPassword setForgot={setForgot}/>
+            : <ForgotPassword setForgot={setForgot} closeAuthTab={props.closeAuthTab}/>
             }
        </div>
     )
@@ -106,6 +118,7 @@ const Login: FC<AuthProps> = (props: AuthProps) => {
 
 type ForgotPasswordProps = {
     setForgot: (val: boolean) => void
+    closeAuthTab: () => void
 }
 
 const ForgotPassword: FC<ForgotPasswordProps> = (props: ForgotPasswordProps) => {
@@ -141,7 +154,7 @@ const ForgotPassword: FC<ForgotPasswordProps> = (props: ForgotPasswordProps) => 
         </DialogContent>
         <DialogActions>
             <Button onClick={forgotPassword}>Send mail request</Button>
-            <Button onClick={closeAuthTab}>Cancel</Button>
+            <Button onClick={props.closeAuthTab}>Cancel</Button>
         </DialogActions>
        <Dialog
                 open={show}
@@ -159,7 +172,7 @@ const ForgotPassword: FC<ForgotPasswordProps> = (props: ForgotPasswordProps) => 
                 <DialogActions>
                 <Button onClick={(e: any) => {
                     setShow(false); 
-                    closeAuthTab();
+                    props.closeAuthTab();
                     navigate('');
                     clearError()
                 }}>Ok</Button>
@@ -170,7 +183,7 @@ const ForgotPassword: FC<ForgotPasswordProps> = (props: ForgotPasswordProps) => 
   )
 }
 
-const Register: FC<AuthProps> = (props: AuthProps) => {
+const Register: FC<TabProps> = (props: TabProps) => {
 
     const [info, setInfo] = useState<RegisterRequest>({name: '', mail: '', password: ''})
     const [show, setShow] = useState<boolean>(false)
@@ -221,7 +234,7 @@ const Register: FC<AuthProps> = (props: AuthProps) => {
                 </DialogContent>
             <DialogActions>
                 <Button onClick={register}>Register</Button>
-                <Button onClick={closeAuthTab}>Cancel</Button>
+                <Button onClick={props.closeAuthTab}>Cancel</Button>
             </DialogActions>
             <Dialog
                 open={show}
@@ -239,7 +252,7 @@ const Register: FC<AuthProps> = (props: AuthProps) => {
                 <DialogActions>
                 <Button onClick={(e: any) => {
                     setShow(false)
-                    closeAuthTab()
+                    props.closeAuthTab()
                     navigate('/')
                     clearError()
                 }}>Ok</Button>

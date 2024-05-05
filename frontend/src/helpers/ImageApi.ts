@@ -12,10 +12,12 @@ export const uploadImage = (type: string, userId: string, file: File) => {
     return axios.post(IMAGE_API_URL + `/upload`, formData, {headers: {'Authorization': 'Bearer ' + token.get().data}})
 }
 
-export const getImage = (type: string, userId?: string, videoId?: string) => {
+export const getImage = (type: string, userId?: string, channelId?: string, videoId?: string) => {
     let query = `type=${type}`
     if (userId) {
         query += `&user=${userId}`
+    } else if (channelId) {
+        query += `&channel=${channelId}`
     }
     if (videoId) {
         query += `&video=${videoId}`

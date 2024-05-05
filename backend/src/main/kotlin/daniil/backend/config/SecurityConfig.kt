@@ -1,9 +1,15 @@
 package daniil.backend.config
 
+import daniil.backend.entity.Channel
+import daniil.backend.entity.User
 import daniil.backend.filter.JwtFilter
 import daniil.backend.property.ClientProperty
+import daniil.backend.repository.ChannelRepository
+import daniil.backend.repository.UserRepository
+import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.CommandLineRunner
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpMethod
@@ -20,6 +26,8 @@ import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 import org.springframework.web.servlet.config.annotation.CorsRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
+import java.time.OffsetDateTime
+import java.util.*
 
 @EnableWebSecurity
 @Configuration
@@ -27,6 +35,9 @@ class SecurityConfig (
     @Autowired private val jwtFilter: JwtFilter,
     @Autowired private val clientProperty: ClientProperty
 ){
+
+
+    private val log = KotlinLogging.logger {  }
 
     @Bean
     fun securityChain(http: HttpSecurity): SecurityFilterChain {
@@ -93,6 +104,31 @@ class SecurityConfig (
     @Throws(Exception::class)
     fun authenticationManager(authenticationConfiguration: AuthenticationConfiguration): AuthenticationManager {
         return authenticationConfiguration.getAuthenticationManager()
+    }
+
+    @Bean
+    fun commandRunner(encoder: PasswordEncoder,
+                      userRepository: UserRepository,
+                      channelRepository: ChannelRepository
+    ) : CommandLineRunner {
+        return CommandLineRunner {
+            run {
+                log.info { "run() - executing..." }
+                val newUser = User("user01", "test@gmail.com", encoder.encode("12345678"))
+                val savedUser = userRepository.save(newUser)
+                val newChannel = Channel(
+                    null, savedUser.name + UUID.randomUUID(),
+                    "type description here", null, null, OffsetDateTime.now(),
+                    false, savedUser, mutableSetOf(), mutableSetOf()
+                )
+
+                val savedChannel = channelRepository.save(newChannel)
+                savedUser.isRegistered = true
+                savedUser.ownChannel = savedChannel
+
+                userRepository.save(savedUser)
+            }
+        }
     }
 
 }

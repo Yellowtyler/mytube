@@ -2,10 +2,12 @@ package daniil.backend.service.impl
 
 import daniil.backend.dto.image.UploadResponseDto
 import daniil.backend.enums.PhotoType
+import daniil.backend.exception.ChannelNotFoundException
 import daniil.backend.exception.UserHasNoPermissionException
 import daniil.backend.exception.UserNotFoundException
 import daniil.backend.exception.VideoNotFoundException
 import daniil.backend.extension.*
+import daniil.backend.repository.ChannelRepository
 import daniil.backend.repository.UserRepository
 import daniil.backend.repository.VideoRepository
 import daniil.backend.service.ImageService
@@ -23,7 +25,8 @@ import java.util.*
 @Service
 class ImageServiceImpl(
     @Autowired private val userRepository: UserRepository,
-    @Autowired private val videoRepository: VideoRepository
+    @Autowired private val videoRepository: VideoRepository,
+    @Autowired private val channelRepository: ChannelRepository
 ): ImageService {
 
     private val logger = KotlinLogging.logger {  }
@@ -58,24 +61,30 @@ class ImageServiceImpl(
             PhotoType.POSTER -> ""
         }
 
+        channelRepository.save(channel)
+
         return UploadResponseDto(fileName)
     }
 
-    override fun getPhoto(type: PhotoType, userId: UUID?, videoId: UUID?): ByteArray {
-        val fileName =  when (type) {
+    override fun getPhoto(type: PhotoType, userId: UUID?, channelId: UUID?, videoId: UUID?): ByteArray {
+        val fileName = when (type) {
             PhotoType.PROFILE -> {
-                if (userId == null) {
-                    throw UserNotFoundException("query param 'user' is absent")
+                if (userId != null) {
+                    val user = userRepository.findById(userId).orElseThrow { throwUserNotFound(userId) }
+                    user.ownChannel!!.profilePhoto
+                } else if (channelId != null) {
+                    val channel = channelRepository.findById(channelId).orElseThrow { throwChannelNotFound(channelId) }
+                    channel.profilePhoto
+                } else {
+                    throw UserNotFoundException("query param 'user' and 'channel' is absent")
                 }
-                val user = userRepository.findById(userId).orElseThrow { throwUserNotFound(userId) }
-                user.ownChannel!!.profilePhoto
             }
             PhotoType.BACKGROUND -> {
-                if (userId == null) {
-                    throw UserNotFoundException("query param 'user' is absent")
+                if (channelId == null) {
+                    throw ChannelNotFoundException("query param 'channel' is absent")
                 }
-                val user = userRepository.findById(userId).orElseThrow { throwUserNotFound(userId) }
-                user.ownChannel!!.backgroundPhoto
+                val channel = channelRepository.findById(channelId).orElseThrow { throwChannelNotFound(channelId) }
+                channel.backgroundPhoto
             }
             PhotoType.POSTER -> {
                 if (videoId == null) {
@@ -85,6 +94,9 @@ class ImageServiceImpl(
                 }
             }
         }
+
+        if (fileName.isNullOrEmpty())
+            return byteArrayOf(0)
 
         val dir = when (type) {
             PhotoType.PROFILE -> PROFILE_PHOTOS_DIR

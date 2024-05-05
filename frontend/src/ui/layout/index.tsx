@@ -9,13 +9,14 @@ import { LeftMenu } from "../left-menu";
 import AccountCircleIcon from '@mui/icons-material/AccountCircle'
 import { RightMenu } from "../right-menu";
 import { useStore } from "@nanostores/react";
-import { error, openAuthTab, token } from "../../stores/security";
+import { error, token } from "../../stores/security";
 import LoginIcon from '@mui/icons-material/Login'
 import { ErrorSnackbar } from "../error-snackbar";
 
 export const Layout: FC = () => {
     
     const [sidebar, setSidebar] = useState<boolean>(false)
+    const [isOpenAuthTab, setIsOpenAuthTab] = useState<boolean>(false)
     const showSidebar = () => setSidebar(!sidebar)
     const [rightAnchor, setRightAnchor] = useState<HTMLElement | null>(null)
     const tokenVal = useStore(token)
@@ -37,12 +38,12 @@ export const Layout: FC = () => {
                     :
                     <LoginIcon onClick={(e: any) => {
                         navigate('/')
-                        openAuthTab()
+                        setIsOpenAuthTab(true)
                     }} fontSize="large" sx={{marginRight: 1, padding: 1, color: '#f5f5f5'}} style={{cursor: 'pointer'}}/>
                 }
                 </Stack>
             </header>
-            <Auth/>
+            <Auth open={isOpenAuthTab} setOpen={setIsOpenAuthTab}/>
             {sidebar &&<LeftMenu sidebar={sidebar} setSidebar={setSidebar}/>}
            <RightMenu anchor={rightAnchor} setAnchor={setRightAnchor} />
            {errorVal && <ErrorSnackbar/>}

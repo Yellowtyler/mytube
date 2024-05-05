@@ -5,10 +5,10 @@ import { useStore } from '@nanostores/react';
 import { createError, error, token } from '../../stores/security';
 import styles from './index.module.css';
 import { Button, Stack, Typography } from '@mui/material';
-import { getVideo } from '../../libs/VideoApi';
+import { getVideo } from '../../helpers/VideoApi';
 import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import ThumbDownIcon from '@mui/icons-material/ThumbDown';
-import { getImage } from '../../libs/ImageApi';
+import { getImage } from '../../helpers/ImageApi';
 import image from '../../icons/mytube.png'
 
 export const Video: FC = () => {
@@ -41,7 +41,7 @@ export const Video: FC = () => {
         <div className={styles['container']}>
             {video && <video className={styles['video']} src={video} controls autoPlay loop>
             </video>}
-            <Typography variant='h4'>{videoInfo?.name}</Typography>
+            <Typography variant='h4' style={{marginTop: '1rem', marginLeft: '-47%'}}>{videoInfo?.name}</Typography>
             {videoInfo && <Buttons videoInfo={videoInfo!} userId={currUser?.id!}/>}
             <Description/>
             <Comments/>
@@ -62,7 +62,7 @@ const Buttons = (props: ButtosProps) => {
 		getImage('profile', props.videoInfo.channel.id)
 		.then(r => {
 			const data = r.data as Blob
-			let newVal = data.size === 0 ? image : URL.createObjectURL(data)  
+			let newVal = data.size === 1 ? image : URL.createObjectURL(data)  
 			setProfilePhoto(newVal)
 		})
         .catch(e => createError(e))
@@ -70,23 +70,23 @@ const Buttons = (props: ButtosProps) => {
 	}, [])
 
     return (
-        <Stack direction={'row'} spacing={8}>
+        <Stack direction={'row'} spacing={7}  margin={'1rem'}>
        
-        <Stack direction={'row'}>
-			<img className={styles['image']} src={profilePhoto}/>
-			<Stack direction={'column'}>
-				<Typography>{props.videoInfo.channel.name}</Typography>
-				<Typography variant='body2'>{props.videoInfo.channel.subscribersCount}</Typography>
-			</Stack>
-        </Stack>
-      
-        <Button variant='contained'>Subscribe</Button>
-        <Stack direction={'row'} spacing={2}>
-			<ThumbUpIcon/>
-			<Typography>{props.videoInfo.likesCount}</Typography>
-			<ThumbDownIcon/>
-			<Typography>{props.videoInfo.dislikesCount}</Typography>
-        </Stack>
+            <Stack direction={'row'} spacing={2}>
+                <img className={styles['image']} src={profilePhoto}/>
+                <Stack direction={'column'}>
+                    <Typography variant='h6'>{props.videoInfo.channel.name}</Typography>
+                    <Typography variant='body2'>{props.videoInfo.channel.subscribersCount} subscribers</Typography>
+                </Stack>
+            </Stack>
+        
+            <Button variant='contained' style={{height:'40px', marginTop: "1rem"}}>Subscribe</Button>
+            <Stack direction={'row'} spacing={2} justifyContent={'center'} alignItems={'center'}>
+                <ThumbUpIcon/>
+                <Typography>{props.videoInfo.likesCount}</Typography>
+                <ThumbDownIcon/>
+                <Typography>{props.videoInfo.dislikesCount}</Typography>
+            </Stack>
 
         </Stack>
     )

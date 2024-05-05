@@ -10,16 +10,18 @@ import { useNavigate } from 'react-router-dom';
 import styles from './index.module.css'
 import AddAPhotoIcon from '@mui/icons-material/AddAPhoto';
 import image from '../../icons/mytube.png'
-import { getImage, uploadImage } from '../../libs/ImageApi';
+import { getImage, uploadImage } from '../../helpers/ImageApi';
+import { WithLoadingScreen } from '../../ui/with-loading-screen';
 
 export const Settings: FC = () => {
 
     const tokenVal = useStore(token)
     const currUser = useStore(currentUser)
-    const [open, setOpen] = useState<boolean>(false)
     const erroVal = useStore(error)
     const navigate = useNavigate()
 
+    const [loading, setLoading] = useState<boolean>(true)
+    const [open, setOpen] = useState<boolean>(false)
     const [newName, setNewName] = useState<string>('')
     const [newMail, setNewMail] = useState<string>('')
     const [selectedFile, setSelectedFile] = useState<any>(image)
@@ -33,10 +35,11 @@ export const Settings: FC = () => {
         if (currUser) {
             setNewName(currUser!.name)
             setNewMail(currUser!.mail)
-            getImage('profile', currUser.id).then(r => {
+            getImage('profile', undefined, currUser.id).then(r => {
                 const data = r.data as Blob
                 let newVal = data.size === 0 ? image : URL.createObjectURL(data)  
                 setSelectedFile(newVal)
+                setLoading(false)
             })
         }
     }, [currUser])
@@ -66,46 +69,49 @@ export const Settings: FC = () => {
         fileReader.readAsDataURL(file);
     }
 
+    const userSettings = (
+        <Paper style={{backgroundColor: 'whitesmoke', width: '500px', margin: '1rem', justifyContent: 'center'}} elevation={2}>
+                <Stack alignContent={'center'} alignItems={'center'} padding={'1rem'} spacing={2}>
+                <Typography variant='h4'>Account settings</Typography> 
+                <div className={styles['container']} >
+                    <img 
+                        className={styles['image']}
+                        src={selectedFile} 
+                    />
+                    <div className={styles['overlay']} onClick={openDialog}>
+                        <AddAPhotoIcon fontSize='large'/>
+                    </div>
+                    <input
+                        ref={hiddenFileInput} 
+                        type='file'
+                        accept='image/*'
+                        style={{display:'none'}}
+                        onChange={(e: any) =>handleUploadImage(e)}
+                    />
+                </div>
+                <TextField 
+                    value={newName}
+                    type='text'
+                    label='Username' 
+                    placeholder='Enter new name'
+                    onChange={(e:any) => setNewName(e.target.value)}
+                />
+                <TextField 
+                    value={newMail}
+                    type='text'
+                    label='Mail'
+                    placeholder='Enter new mail'
+                    onChange={(e:any) => setNewMail(e.target.value)}
+                />
+                <Button onClick={editUser} variant='contained' style={{paddingLeft:'5.5rem', paddingRight: '5.5rem'}}>Save</Button>
+            {open && <ChangePassword setOpen={setOpen} />}
+                {!open && <Button variant='contained' style={{paddingLeft:'2rem', paddingRight: '2rem'}} onClick={(e:any) => setOpen(true)}>Change password</Button>}
+            </Stack>
+            </Paper>
+    )
   return (
     <div style={{display:'flex', justifyContent: 'center'}}>
-    <Paper style={{backgroundColor: 'whitesmoke', width: '500px', margin: '1rem', justifyContent: 'center'}} elevation={2}>
-        <Stack alignContent={'center'} alignItems={'center'} padding={'1rem'} spacing={2}>
-        <Typography variant='h4'>Account settings</Typography> 
-        <div className={styles['container']} >
-            <img 
-                className={styles['image']}
-                src={selectedFile} 
-            />
-            <div className={styles['overlay']} onClick={openDialog}>
-                <AddAPhotoIcon fontSize='large'/>
-            </div>
-            <input
-                ref={hiddenFileInput} 
-                type='file'
-                accept='image/*'
-                style={{display:'none'}}
-                onChange={(e: any) =>handleUploadImage(e)}
-            />
-        </div>
-        <TextField 
-            value={newName}
-            type='text'
-            label='Username' 
-            placeholder='Enter new name'
-            onChange={(e:any) => setNewName(e.target.value)}
-        />
-        <TextField 
-            value={newMail}
-            type='text'
-            label='Mail'
-            placeholder='Enter new mail'
-            onChange={(e:any) => setNewMail(e.target.value)}
-        />
-        <Button onClick={editUser} variant='contained' style={{paddingLeft:'5.5rem', paddingRight: '5.5rem'}}>Save</Button>
-       {open && <ChangePassword setOpen={setOpen} />}
-        {!open && <Button variant='contained' style={{paddingLeft:'2rem', paddingRight: '2rem'}} onClick={(e:any) => setOpen(true)}>Change password</Button>}
-    </Stack>
-    </Paper>
+        <WithLoadingScreen loading={loading} element={userSettings} />
         {erroVal && <ErrorSnackbar/>}
     </div>
   )

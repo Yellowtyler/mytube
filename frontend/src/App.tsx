@@ -11,6 +11,7 @@ import { ErrorPage } from './pages/error-page';
 import { Channel } from './pages/channel';
 import { UploadVideo } from './pages/upload-video';
 import { Video } from './pages/video';
+import { ConfirmRegistration } from './pages/confirm-registration';
 
 function App() {
   
@@ -33,6 +34,7 @@ function App() {
       <Route path='/' element={<Layout />}>
         <Route index element={<Home />} />
         <Route path='/reset-password/*' element={<ResetPassword/>}/>
+        <Route path='/confirm-registration/*' element={<ConfirmRegistration/>}/>
         <Route path='/settings' element={<Settings/>} />
         <Route path='/error' element={<ErrorPage/>} />
         <Route path='/channel/*' element={<Channel/>} />

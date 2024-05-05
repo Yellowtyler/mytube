@@ -4,7 +4,7 @@ import { createError, error, token } from '../../stores/security'
 import { useStore } from '@nanostores/react'
 import { currentUser, fetchUserAndOtherData} from '../../stores/current-user'
 import { Button, Card, CardContent, CardMedia, Divider, Grid, Stack, TextField, Typography } from '@mui/material'
-import { getImage, uploadImage } from '../../libs/ImageApi'
+import { getImage, uploadImage } from '../../helpers/ImageApi'
 import image from '../../icons/mytube.png'
 import background from '../../icons/default_background.jpg'
 import styles from './index.module.css'
@@ -12,9 +12,10 @@ import AddAPhotoIcon from '@mui/icons-material/AddAPhoto';
 import EditIcon from '@mui/icons-material/Edit';
 import { ErrorSnackbar } from '../../ui/error-snackbar'
 import DoneIcon from '@mui/icons-material/Done';
-import { getVideos } from '../../libs/VideoApi'
-import { mapDate } from '../../libs/Date'
+import { getVideos } from '../../helpers/VideoApi'
+import { mapDate } from '../../helpers/Date'
 import { useNavigate } from 'react-router-dom'
+import { WithLoadingScreen } from '../../ui/with-loading-screen'
 
 export const Channel: FC = () => {
     
@@ -29,6 +30,7 @@ export const Channel: FC = () => {
     const [editChannelReq, setEditChannelReq] = useState<EditChannelRequest>({id: '', name: '', description: ''})
     const [edit, setEdit] = useState<boolean>(false)
     const [isSubscribeDisabled, setIsSubscribeDisabled] = useState<boolean>(false)
+    const [loading, setLoading] = useState<boolean>(true)
 
     const hiddenProfileInput = useRef<HTMLInputElement>(null)
     const hiddenBackgroundInput = useRef<HTMLInputElement>(null)
@@ -41,25 +43,28 @@ export const Channel: FC = () => {
     const fetchChannelData = () => {
         let id = window.location.pathname.split('/').pop();
         ChannelApiImplService.getChannel(id!)
-                .then(r => {
+                .then(chan => {
 
-                    setChannel(r)
-                    if (currUser && r.id === currUser?.channelId!) {
+                    setChannel(chan)
+                    if (currUser && chan.id === currUser?.channelId!) {
                         setIsOwnChannel(true)
-                        setEditChannelReq({id: r.id, name: r.name, description: r.description})
+                        setEditChannelReq({id: chan.id, name: chan.name, description: chan.description})
                     }
                 
-                    getImage('profile', r.owner.id).then(r => {
+                    getImage('profile', chan.id).then(r => {
                         const data = r.data as Blob
-                        let newVal = data.size === 0 ? image : URL.createObjectURL(data)  
+                        let newVal = data.size === 1 ? image : URL.createObjectURL(data)  
                         setProfilePhoto(newVal)
+
+                        getImage('background', chan.id).then(r => {
+                            const data = r.data as Blob
+                            let newVal = data.size === 1 ? background : URL.createObjectURL(data)  
+                            setBackgroundPhoto(newVal)
+                            setLoading(false)
+                        })
                     })
 
-                    getImage('background', r.owner.id).then(r => {
-                        const data = r.data as Blob
-                        let newVal = data.size === 0 ? background : URL.createObjectURL(data)  
-                        setBackgroundPhoto(newVal)
-                    })
+                    
                 })
                 .catch(e => createError(e))
 
@@ -105,82 +110,85 @@ export const Channel: FC = () => {
         })
     }
 
-    return (
-
-        <div className={styles['box']}>
+    
+    const channelInfo = (
             <div>
-           <div className={styles['background-container']}>
-                <img className={styles['background']} src={backgroundPhoto}/>
-                {isOwnChannel && <div className={styles['overlay-background']} onClick={openBackgroundPhotoDialog}>
-                <AddAPhotoIcon fontSize='large'/>
-                </div>}
-            </div>
-            
-            <Stack direction={'row'} marginBottom={'1rem'} width={'700px'}>
-                <div className={styles['profile-container']}>
-                    <img className={styles['image']} src={profilePhoto}/>
-                    {isOwnChannel && <div className={styles['overlay-profile']} onClick={openProfilePhotoDialog}>
-                        <AddAPhotoIcon fontSize='large'/>
+                <div className={styles['background-container']}>
+                    <img className={styles['background']} src={backgroundPhoto}/>
+                    {isOwnChannel && <div className={styles['overlay-background']} onClick={openBackgroundPhotoDialog}>
+                    <AddAPhotoIcon fontSize='large'/>
                     </div>}
-                    <input
-                        ref={hiddenProfileInput} 
-                        type='file'
-                        accept='image/*'
-                        style={{display:'none'}}
-                        onChange={(e: any) =>handleUploadImage(e, 'profile')}
-                    />
-                    <input
-                        ref={hiddenBackgroundInput} 
-                        type='file'
-                        accept='image/*'
-                        style={{display:'none'}}
-                        onChange={(e: any) =>handleUploadImage(e, 'background')}
-                    />
                 </div>
-                <Stack direction={'column'} spacing={1}>
-                    {isOwnChannel && !edit && <Stack direction={'row'}>
-                        <Typography variant='h4'>{channel?.name}</Typography>
-                        <EditIcon style={{cursor:'pointer'}} onClick={handleEditClick}/>
-                    </Stack>
-                    }
-                     {isOwnChannel && edit && <Stack direction={'row'}>
-                        <TextField 
-                            value={editChannelReq.name} 
-                            placeholder='Enter new channel name'
-                            label='Channel name'
-                            onChange={(e: any) => setEditChannelReq(prev=>({...prev, name: e.target.value}))}
+                
+                <Stack direction={'row'} marginBottom={'1rem'} width={'700px'}>
+                    <div className={styles['profile-container']}>
+                        <img className={styles['image']} src={profilePhoto}/>
+                        {isOwnChannel && <div className={styles['overlay-profile']} onClick={openProfilePhotoDialog}>
+                            <AddAPhotoIcon fontSize='large'/>
+                        </div>}
+                        <input
+                            ref={hiddenProfileInput} 
+                            type='file'
+                            accept='image/*'
+                            style={{display:'none'}}
+                            onChange={(e: any) =>handleUploadImage(e, 'profile')}
                         />
-                        <DoneIcon style={{cursor:'pointer'}} onClick={handleEditChannel}/>
-                    </Stack>
-                    }
-                    {!isOwnChannel && <Typography variant='h4'>{channel?.name}</Typography>}
-                    <Typography>{channel?.subscribersCount + ' subscribers ‧ ' + channel?.videosCount + ' videos'}</Typography>
-                    {isOwnChannel && !edit && <Stack direction={'row'}>
-                        <Typography variant='body2'>{channel?.description}</Typography>
-                        <EditIcon style={{cursor:'pointer'}} onClick={handleEditClick}/>
-                    </Stack>
-                    }
-                     {isOwnChannel && edit && <Stack direction={'row'}>
-                        <TextField 
-                            value={editChannelReq.description} 
-                            placeholder='Enter new channel description'
-                            label='Description'
-                            onChange={(e: any) => setEditChannelReq(prev=>({...prev, description: e.target.value}))}
+                        <input
+                            ref={hiddenBackgroundInput} 
+                            type='file'
+                            accept='image/*'
+                            style={{display:'none'}}
+                            onChange={(e: any) =>handleUploadImage(e, 'background')}
                         />
-                        <DoneIcon style={{cursor:'pointer'}} onClick={handleEditChannel}/>
+                    </div>
+                    <Stack direction={'column'} spacing={1}>
+                        {isOwnChannel && !edit && <Stack direction={'row'}>
+                            <Typography variant='h4'>{channel?.name}</Typography>
+                            <EditIcon style={{cursor:'pointer'}} onClick={handleEditClick}/>
+                        </Stack>
+                        }
+                        {isOwnChannel && edit && <Stack direction={'row'}>
+                            <TextField 
+                                value={editChannelReq.name} 
+                                placeholder='Enter new channel name'
+                                label='Channel name'
+                                onChange={(e: any) => setEditChannelReq(prev=>({...prev, name: e.target.value}))}
+                            />
+                            <DoneIcon style={{cursor:'pointer'}} onClick={handleEditChannel}/>
+                        </Stack>
+                        }
+                        {!isOwnChannel && <Typography variant='h4'>{channel?.name}</Typography>}
+                        <Typography>{channel?.subscribersCount + ' subscribers ‧ ' + channel?.videosCount + ' videos'}</Typography>
+                        {isOwnChannel && !edit && <Stack direction={'row'}>
+                            <Typography variant='body2'>{channel?.description}</Typography>
+                            <EditIcon style={{cursor:'pointer'}} onClick={handleEditClick}/>
+                        </Stack>
+                        }
+                        {isOwnChannel && edit && <Stack direction={'row'}>
+                            <TextField 
+                                value={editChannelReq.description} 
+                                placeholder='Enter new channel description'
+                                label='Description'
+                                onChange={(e: any) => setEditChannelReq(prev=>({...prev, description: e.target.value}))}
+                            />
+                            <DoneIcon style={{cursor:'pointer'}} onClick={handleEditChannel}/>
+                        </Stack>
+                        }
+                        {!isOwnChannel && <Typography variant='body2'>{channel?.name}</Typography>}
+                        {!isOwnChannel && tokenVal.data && <Button variant='contained' style={{width: '50%'}} disabled={isSubscribeDisabled} onClick={subscribe}>Subscribe</Button>}
+                        
                     </Stack>
-                    }
-                    {!isOwnChannel && <Typography variant='body2'>{channel?.name}</Typography>}
-                    {!isOwnChannel && tokenVal.data && <Button variant='contained' style={{width: '50%'}} disabled={isSubscribeDisabled} onClick={subscribe}>Subscribe</Button>}
-                    
                 </Stack>
-            </Stack>
-            <Divider/>
-            <Videos/>
-            {errorVal && <ErrorSnackbar/>}
-        </div>
-        </div>
+                <Divider/>
+                <Videos/>
+                {errorVal && <ErrorSnackbar/>}
+            </div>
+    )
 
+    return (
+        <div className={styles['box']}>
+            <WithLoadingScreen loading={loading} element={channelInfo} />
+        </div>
   )
 }
 
@@ -189,7 +197,7 @@ export const Channel: FC = () => {
 const Videos: FC = () => {
 
     const [videos, setVideos] = useState<VideoShortDto[]>([])
-    const [page, setPage] = useState<number>(1)
+    const [page, setPage] = useState<number>(0)
     const [isFetch, setIsFetch] = useState<boolean>(true) 
     const [totalPages, setTotalPages] = useState<number>(0)
 
@@ -214,7 +222,6 @@ const Videos: FC = () => {
             setIsFetch(false)
             setPage(page+1)
             setTotalPages(r.data.totalPages)
-            console.log(page)
         })
         .catch(e => createError(e))
 

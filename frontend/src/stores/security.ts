@@ -3,15 +3,8 @@ import { action, atom, computed } from "nanostores";
 import { ApiError, AuthApiImplService, LoginRequest, OpenAPI } from "../api";
 import { ErrorCode, ErrorResponse } from "../api/models/ErrorResponse";
 import { AxiosError } from "axios";
+import { removeUser } from "./current-user";
 
-export let openAuth = atom<boolean>(false)
-
-export const openAuthTab = () => {
-  error.set(null)
-  openAuth.set(true)
-}
-
-export const closeAuthTab = () => openAuth.set(false)
 
 let data = persistentAtom<string | null>('token', null, {
     decode: (value): string | null => {
@@ -23,6 +16,7 @@ let data = persistentAtom<string | null>('token', null, {
             return null
         } catch (e) {
             removeToken()
+            removeUser()
             return null
         }
     },
@@ -81,6 +75,7 @@ export let auth = action(
 export let logout = action(data, 'logout', async (store): Promise<void> => {
   let authorization = 'Bearer ' + store.get()
   removeToken()
+  removeUser()
 
   if (authorization) {
       await AuthApiImplService.logout(authorization)
@@ -93,31 +88,28 @@ export const createError = (error_: any) => {
           message: string
           code: ErrorCode
         }
+    
 
     if (typeof error_ === 'string') {
-         errorResponseValue= {message: error_, code: ErrorCode.VALIDATION_ERROR}
-    }
-
-    else if (!token.get().data && error_.message !== 'Failed to fetch') {
-        errorResponseValue= {message: error_.message, code: ErrorCode.TOKEN_NOT_FOUND}
+        errorResponseValue = {message: error_, code: ErrorCode.VALIDATION_ERROR}
     }
 
     else if (error_ instanceof ApiError) {
-        errorResponseValue= {message: error_.body.message, code: error_.body.code}
+        errorResponseValue = {message: error_.body.message, code: error_.body.errorCode}
     }
 
     else if (error_ instanceof AxiosError) {
         if (error_.message === 'Network Error') {
-            errorResponseValue= {message: "Maximum upload size exceeded (100 MB)", code: ErrorCode.SERVICE_ERROR}
+            errorResponseValue = {message: "Maximum upload size exceeded (100 MB)", code: ErrorCode.SERVICE_ERROR}
         } else if (error_.response?.data.message) {
-            errorResponseValue= {message: error_.response?.data.message, code: error_.response?.data.code}
+            errorResponseValue = {message: error_.response?.data.message, code: error_.response?.data.code}
         } else {
-            errorResponseValue= {message: error_.message, code: ErrorCode.EXPIRED_TOKEN}
+            errorResponseValue = {message: error_.message, code: ErrorCode.EXPIRED_TOKEN}
         }
     }
 
     else {
-        errorResponseValue= {message: "Service is unavailable", code: ErrorCode.SERVICE_ERROR}
+        errorResponseValue = {message: "Service is unavailable", code: ErrorCode.SERVICE_ERROR}
     }
     
     error.set({

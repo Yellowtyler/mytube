@@ -14,7 +14,6 @@ export class ApiError extends Error {
 
     constructor(request: ApiRequestOptions, response: ApiResult, message: string) {
         super(message);
-
         this.name = 'ApiError';
         this.url = response.url;
         this.status = response.status;

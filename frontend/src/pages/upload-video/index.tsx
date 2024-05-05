@@ -1,11 +1,11 @@
 import { FC, useEffect, useRef, useState } from 'react'
 import styles from './index.module.css'
 import { Button, LinearProgress, Stack, TextField, Typography} from '@mui/material'
-import { uploadVideo } from '../../libs/VideoApi'
+import { uploadVideo } from '../../helpers/VideoApi'
 import { createError } from '../../stores/security'
 import AddAPhotoIcon from '@mui/icons-material/AddAPhoto';
 import VideoCallIcon from '@mui/icons-material/VideoCall';
-import { uploadImage } from '../../libs/ImageApi'
+import { uploadImage } from '../../helpers/ImageApi'
 import { useStore } from '@nanostores/react'
 import { currentUser } from '../../stores/current-user'
 import { ErrorPage } from '../error-page'

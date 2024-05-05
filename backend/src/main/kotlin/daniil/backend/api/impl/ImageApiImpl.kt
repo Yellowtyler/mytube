@@ -28,9 +28,10 @@ class ImageApiImpl(
     @GetMapping
     override fun getImage(@RequestParam("type") type: String,
                           @RequestParam("user", required = false) userId: UUID?,
+                          @RequestParam("channel", required = false) channelId: UUID?,
                           @RequestParam(name = "video", required = false) videoId: UUID?
     ): ByteArray {
-        return imageService.getPhoto(mapType(type), userId, videoId)
+        return imageService.getPhoto(mapType(type), userId, channelId, videoId)
     }
 
     private fun mapType(type: String): PhotoType {
