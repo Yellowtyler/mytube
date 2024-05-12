@@ -14,5 +14,7 @@ export type ChannelDto = {
     owner: UserDto;
     subscribersCount: number;
     videosCount: number;
+    isSubscribed: boolean;
+    subscribed?: boolean;
     blocked?: boolean;
 };

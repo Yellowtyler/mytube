@@ -41,10 +41,10 @@ class Video(
     var createdAt: OffsetDateTime,
 
     @OneToMany(fetch = FetchType.LAZY)
-    val comments: Set<Comment> = mutableSetOf(),
+    val comments: MutableSet<Comment> = mutableSetOf(),
 
     @OneToMany(fetch = FetchType.LAZY)
-    val likes: Set<Like> = mutableSetOf(),
+    val likes: MutableSet<Like> = mutableSetOf(),
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "channel_id")

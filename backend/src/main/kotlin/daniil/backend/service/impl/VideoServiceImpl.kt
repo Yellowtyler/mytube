@@ -140,11 +140,20 @@ class VideoServiceImpl(
         }
 
         var isLike: Boolean? = null
+        var isOwner = false
+        var isSubscribed = false
+
+        val videoChannel = video.channel
         if (authentication != null) {
             val user = userRepository.findByName(authentication.name) ?: throwUserNotFound(authentication.name)
-            if (video.isHidden && user.ownChannel != video.channel) {
+            val ownChannel = user.ownChannel
+            if (video.isHidden && ownChannel != videoChannel) {
                throw VideoIsHiddenException("video ${video.name} is hidden")
             }
+
+            isOwner = ownChannel == videoChannel
+            isSubscribed = channelRepository.isSubscribed(user.id!!, videoChannel.id!!)
+
             val like = likeRepository.findByUser_IdAndVideo_Id(user.id!!, videoId)
             isLike = like?.isLike
         }
@@ -159,12 +168,14 @@ class VideoServiceImpl(
             }
         }
 
-
         val videoDto = videoMapper.toDto(video)
         videoDto.isLike = isLike
         videoDto.dislikesCount = dislikesCount
         videoDto.likesCount = likesCount
-        videoDto.channel.subscribersCount = video.channel.subscribers.size
+        videoDto.channel.subscribersCount = videoChannel.subscribers.size
+        videoDto.channel.isOwner = isOwner
+        videoDto.channel.isSubscribed = isSubscribed
+
         return videoDto
     }
 

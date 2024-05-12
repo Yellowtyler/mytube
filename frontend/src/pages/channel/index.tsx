@@ -13,7 +13,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import { ErrorSnackbar } from '../../ui/error-snackbar'
 import DoneIcon from '@mui/icons-material/Done';
 import { getVideos } from '../../helpers/VideoApi'
-import { mapDate } from '../../helpers/Date'
+import { parseDate } from '../../helpers/Date'
 import { useNavigate } from 'react-router-dom'
 import { WithLoadingScreen } from '../../ui/with-loading-screen'
 
@@ -38,7 +38,7 @@ export const Channel: FC = () => {
     useEffect(() => {
         OpenAPI.TOKEN = tokenVal!.data!  
         fetchUserAndOtherData(fetchChannelData);
-    }, [])
+    }, [channel])
     
     const fetchChannelData = () => {
         let id = window.location.pathname.split('/').pop();
@@ -46,17 +46,18 @@ export const Channel: FC = () => {
                 .then(chan => {
 
                     setChannel(chan)
+                    setIsSubscribeDisabled(chan.isSubscribed)
                     if (currUser && chan.id === currUser?.channelId!) {
                         setIsOwnChannel(true)
                         setEditChannelReq({id: chan.id, name: chan.name, description: chan.description})
                     }
                 
-                    getImage('profile', chan.id).then(r => {
+                    getImage('profile', undefined, chan.id).then(r => {
                         const data = r.data as Blob
                         let newVal = data.size === 1 ? image : URL.createObjectURL(data)  
                         setProfilePhoto(newVal)
 
-                        getImage('background', chan.id).then(r => {
+                        getImage('background', undefined, chan.id).then(r => {
                             const data = r.data as Blob
                             let newVal = data.size === 1 ? background : URL.createObjectURL(data)  
                             setBackgroundPhoto(newVal)
@@ -175,12 +176,14 @@ export const Channel: FC = () => {
                         </Stack>
                         }
                         {!isOwnChannel && <Typography variant='body2'>{channel?.name}</Typography>}
-                        {!isOwnChannel && tokenVal.data && <Button variant='contained' style={{width: '50%'}} disabled={isSubscribeDisabled} onClick={subscribe}>Subscribe</Button>}
+                        {!isOwnChannel && tokenVal.data && <Button variant='contained' style={{width: '50%'}} disabled={isSubscribeDisabled} onClick={subscribe}>
+                            {isSubscribeDisabled ? 'Subscribed' : 'Subscribe'}
+                            </Button>}
                         
                     </Stack>
                 </Stack>
                 <Divider/>
-                <Videos/>
+                <Videos channel={channel}/>
                 {errorVal && <ErrorSnackbar/>}
             </div>
     )
@@ -192,9 +195,11 @@ export const Channel: FC = () => {
   )
 }
 
+type VideosProps = {
+    channel: ChannelDto | undefined;
+}
 
-
-const Videos: FC = () => {
+const Videos: FC<VideosProps> = (props: VideosProps) => {
 
     const [videos, setVideos] = useState<VideoShortDto[]>([])
     const [page, setPage] = useState<number>(0)
@@ -216,7 +221,7 @@ const Videos: FC = () => {
             const prevVideos = videos
             const newVideos: VideoShortDto[] = [...prevVideos, ...r.data.list]
             newVideos.forEach((v) => {
-                v.createdAt = mapDate(v.createdAt)
+                v.createdAt = parseDate(v.createdAt)
             })
             setVideos(newVideos)
             setIsFetch(false)
@@ -225,7 +230,7 @@ const Videos: FC = () => {
         })
         .catch(e => createError(e))
 
-    }, [isFetch])
+    }, [isFetch, props.channel])
 
     const handleScroll = () => {
         if (window.innerHeight + document.documentElement.scrollTop !== document.documentElement.offsetHeight) return;
@@ -256,7 +261,7 @@ const Video: FC<VideoProps> = (props: VideoProps) => {
     const navigate = useNavigate()
 
     useEffect(() => {
-        getImage('poster', undefined, props.video.id)
+        getImage('poster', undefined, undefined, props.video.id)
         .then(r => {
             const data = r.data as Blob
             let newVal = data.size === 0 ? image : URL.createObjectURL(data)  

@@ -3,8 +3,12 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type VideoOwnerDto = {
+export type ChannelInfoDto = {
     id: string;
     name: string;
+    isOwner: boolean;
+    isSubscribed: boolean;
     subscribersCount: number;
+    owner?: boolean;
+    subscribed?: boolean;
 };

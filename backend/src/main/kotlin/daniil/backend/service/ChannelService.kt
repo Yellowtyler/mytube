@@ -5,7 +5,7 @@ import org.springframework.security.core.Authentication
 import java.util.*
 
 interface ChannelService {
-    fun getChannel(id: UUID): ChannelDto
+    fun getChannel(id: UUID, auth: Authentication?): ChannelDto
     fun getChannels(req: GetChannelsRequest, auth: Authentication?): GetChannelsResponse
     fun subscribe(req: SubscribeChannelRequest, auth: Authentication)
     fun blockChannel(req: BlockChannelRequest, auth: Authentication): ChannelDto

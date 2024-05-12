@@ -44,7 +44,7 @@ export const Layout: FC = () => {
                 </Stack>
             </header>
             <Auth open={isOpenAuthTab} setOpen={setIsOpenAuthTab}/>
-            {sidebar &&<LeftMenu sidebar={sidebar} setSidebar={setSidebar}/>}
+            {sidebar && <LeftMenu sidebar={sidebar} setSidebar={setSidebar}/>}
            <RightMenu anchor={rightAnchor} setAnchor={setRightAnchor} />
            {errorVal && <ErrorSnackbar/>}
             <Outlet/>

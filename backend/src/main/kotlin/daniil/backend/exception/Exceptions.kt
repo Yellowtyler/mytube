@@ -31,6 +31,10 @@ class UserAlreadyExistsException(override val message: String) : AbstractExcepti
     errorCode = ErrorCode.USER_ALREADY_EXISTS, message = message
 )
 
+class UserAlreadySubscribedException(override val message: String): AbstractException(
+    errorCode = ErrorCode.USER_ALREADY_SUBSCRIBED, message = message
+)
+
 class WrongPasswordException(override val message: String) : AbstractException(
     errorCode = ErrorCode.WRONG_PASSWORD, message = message
 )

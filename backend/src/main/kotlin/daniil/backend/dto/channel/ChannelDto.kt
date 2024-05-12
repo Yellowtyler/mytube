@@ -11,6 +11,7 @@ data class ChannelDto(
     val createdAt: OffsetDateTime,
     var isBlocked: Boolean,
     val owner: UserDto,
-    val subscribersCount: Int,
-    var videosCount: Int
+    var subscribersCount: Int,
+    var videosCount: Int,
+    var isSubscribed: Boolean
 )

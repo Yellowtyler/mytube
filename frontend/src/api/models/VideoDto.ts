@@ -3,8 +3,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
+import type { ChannelInfoDto } from './ChannelInfoDto';
 import type { CommentDto } from './CommentDto';
-import type { VideoOwnerDto } from './VideoOwnerDto';
 
 export type VideoDto = {
     id: string;
@@ -17,6 +17,6 @@ export type VideoDto = {
     isLike?: boolean;
     dislikesCount: number;
     createdAt: string;
-    channel: VideoOwnerDto;
+    channel: ChannelInfoDto;
     like?: boolean;
 };

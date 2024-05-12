@@ -12,19 +12,18 @@ import { request as __request } from '../core/request';
 export class LikeApiImplService {
 
     /**
-     * @param req 
+     * @param requestBody 
      * @returns LikeDto OK
      * @throws ApiError
      */
     public static likeVideo(
-req: LikeVideoRequest,
+requestBody: LikeVideoRequest,
 ): CancelablePromise<LikeDto> {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/api/like',
-            query: {
-                'req': req,
-            },
+            body: requestBody,
+            mediaType: 'application/json',
         });
     }
 

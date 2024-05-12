@@ -6,7 +6,6 @@ import daniil.backend.entity.Like
 import daniil.backend.exception.LikeNotFoundException
 import daniil.backend.extension.throwUserNotFound
 import daniil.backend.extension.throwVideoNotFound
-import daniil.backend.mapper.LikeMapper
 import daniil.backend.repository.LikeRepository
 import daniil.backend.repository.UserRepository
 import daniil.backend.repository.VideoRepository
@@ -22,7 +21,6 @@ class LikeServiceImpl(
     @Autowired private val videoRepository: VideoRepository,
     @Autowired private val userRepository: UserRepository,
     @Autowired private val likeRepository: LikeRepository,
-    @Autowired private val likeMapper: LikeMapper
 ): LikeService{
     override fun likeVideo(req: LikeVideoRequest, authentication: Authentication): LikeDto {
         val user = userRepository.findByName(authentication.name) ?: throwUserNotFound(authentication.name)
@@ -38,12 +36,25 @@ class LikeServiceImpl(
         }
 
         like.isLike = req.isLike
-        return likeMapper.toDto(likeRepository.save(like))
+
+        //TODO: edit saving like
+        val savedLike = likeRepository.save(like)
+        user.likes?.add(savedLike)
+        video.likes.add(savedLike)
+        userRepository.save(user)
+        videoRepository.save(video)
+        return LikeDto(savedLike.id!!)
     }
     override fun deleteLike(videoId: UUID, authentication: Authentication) {
         val user = userRepository.findByName(authentication.name) ?: throwUserNotFound(authentication.name)
         val video = videoRepository.findById(videoId).orElseThrow { throwVideoNotFound(videoId) }
         val like = likeRepository.findByUser_IdAndVideo_Id(user.id!!, video.id!!) ?: throw LikeNotFoundException("like for video=$videoId and user=${user.name} not found")
+
+        user.likes?.remove(like)
+        video.likes.remove(like)
+        userRepository.save(user)
+        videoRepository.save(video)
+
         likeRepository.delete(like)
     }
 }

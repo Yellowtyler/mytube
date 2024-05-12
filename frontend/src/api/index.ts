@@ -10,6 +10,7 @@ export type { OpenAPIConfig } from './core/OpenAPI';
 export type { BlockChannelRequest } from './models/BlockChannelRequest';
 export type { ChangePasswordRequest } from './models/ChangePasswordRequest';
 export type { ChannelDto } from './models/ChannelDto';
+export type { ChannelInfoDto } from './models/ChannelInfoDto';
 export type { ChannelShortDto } from './models/ChannelShortDto';
 export type { CommentDto } from './models/CommentDto';
 export type { EditChannelRequest } from './models/EditChannelRequest';
@@ -33,7 +34,6 @@ export { UpdateRoleRequest } from './models/UpdateRoleRequest';
 export { UserDto } from './models/UserDto';
 export { UserShortDto } from './models/UserShortDto';
 export type { VideoDto } from './models/VideoDto';
-export type { VideoOwnerDto } from './models/VideoOwnerDto';
 export type { VideoShortDto } from './models/VideoShortDto';
 
 export { AuthApiImplService } from './services/AuthApiImplService';

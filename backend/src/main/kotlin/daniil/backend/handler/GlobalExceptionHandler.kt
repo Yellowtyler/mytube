@@ -28,6 +28,13 @@ class GlobalExceptionHandler {
             .body(ErrorResponse(e.errorCode, e.message))
     }
 
+    @ExceptionHandler(UserAlreadySubscribedException::class)
+    fun handleUserAlreadySubscribedException(e: UserAlreadySubscribedException): ResponseEntity<ErrorResponse> {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body(ErrorResponse(e.errorCode, e.message))
+    }
+
+
     @ExceptionHandler(TokenAlreadyExistsException::class)
     fun handleTokenAlreadyExistsException(e: TokenAlreadyExistsException): ResponseEntity<ErrorResponse> {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)

@@ -114,6 +114,11 @@ class SecurityConfig (
         return CommandLineRunner {
             run {
                 log.info { "run() - executing..." }
+
+                if (userRepository.existsByName("user01")) {
+                    return@CommandLineRunner
+                }
+
                 val newUser = User("user01", "test@gmail.com", encoder.encode("12345678"))
                 val savedUser = userRepository.save(newUser)
                 val newChannel = Channel(

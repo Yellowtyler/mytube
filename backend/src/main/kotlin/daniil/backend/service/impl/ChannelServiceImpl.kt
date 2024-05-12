@@ -4,6 +4,7 @@ import daniil.backend.dto.channel.*
 import daniil.backend.entity.Channel
 import daniil.backend.entity.User
 import daniil.backend.enums.UserRole
+import daniil.backend.exception.UserAlreadySubscribedException
 import daniil.backend.exception.UserHasNoPermissionException
 import daniil.backend.extension.getRole
 import daniil.backend.extension.throwChannelNotFound
@@ -31,10 +32,19 @@ class ChannelServiceImpl(
 
     val logger = KotlinLogging.logger {  }
 
-    override fun getChannel(id: UUID): ChannelDto {
+    override fun getChannel(id: UUID, auth: Authentication?): ChannelDto {
         val channel = channelRepository.findById(id).orElseThrow { throwChannelNotFound(id) }
         val dto = channelMapper.toDto(channel)
         dto.videosCount = channel.videos.size
+        dto.subscribersCount = channel.subscribers.size
+
+        if (auth != null) {
+            val user = userRepository.findByName(auth.name) ?: throwUserNotFound(auth.name)
+            dto.isSubscribed = channelRepository.isSubscribed(user.id!!, id)
+        } else {
+            dto.isSubscribed = false
+        }
+
         return dto
     }
 
@@ -82,6 +92,11 @@ class ChannelServiceImpl(
         if (user == channel.owner) {
             throw Exception("user ${auth.name} can't subscribe to their own channel")
         }
+        if (channelRepository.isSubscribed(user.id!!, channel.id!!)) {
+            throw UserAlreadySubscribedException("user ${auth.name} already subscribed to this channel")
+        }
+
+        // TODO: edit subscribe
         val subscribers = channel.subscribers
         subscribers.add(user)
         channelRepository.save(channel)

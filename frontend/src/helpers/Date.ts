@@ -1,5 +1,5 @@
 
-export const mapDate = (dateStr: string): string => {
+export const parseDate = (dateStr: string): string => {
     if (dateStr.includes('ago')) {
         return dateStr
     }

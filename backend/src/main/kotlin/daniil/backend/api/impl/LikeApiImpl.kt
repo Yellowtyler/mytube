@@ -18,7 +18,7 @@ class LikeApiImpl(
 ): LikeApi {
 
     @PostMapping
-    override fun likeVideo(req: LikeVideoRequest, authentication: Authentication): ResponseEntity<LikeDto> {
+    override fun likeVideo(@RequestBody req: LikeVideoRequest, authentication: Authentication): ResponseEntity<LikeDto> {
         return ResponseEntity.ok(likeService.likeVideo(req, authentication))
     }
 

@@ -9,7 +9,6 @@ export const uploadVideo = (name: string, poster: string, file: File) => {
     formData.append("video", file) 
     formData.append("name", name)
     formData.append("poster", poster)
-    console.log(token.get().data)
     return axios.post(VIDEO_API_URL, formData, {headers: {'Authorization': 'Bearer ' + token.get().data, "Content-Type": 'multipart/form-data'}})
 }
 

@@ -1,6 +1,6 @@
 package daniil.backend.mapper
 
-import daniil.backend.dto.channel.VideoOwnerDto
+import daniil.backend.dto.channel.ChannelInfoDto
 import daniil.backend.dto.video.VideoDto
 import daniil.backend.dto.video.VideoShortDto
 import daniil.backend.entity.Channel
@@ -16,7 +16,9 @@ interface VideoMapper {
     fun toDto(entity: Video): VideoDto
 
     @Named("mapChannel")
-    fun mapChannel(channel: Channel): VideoOwnerDto
+    @Mapping(target = "owner", ignore = true)
+    @Mapping(target = "isSubscribed", ignore = true)
+    fun mapChannel(channel: Channel): ChannelInfoDto
 
     @Mapping(source = "blocked", target = "isBlocked")
     @Mapping(source = "hidden", target = "isHidden")
